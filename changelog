@@ -1,0 +1,14 @@
+1.00:
+	- ui
+	  . reworked titlescreen and recents menu
+	  .	implemented a whole new ui animation method 
+	  . fixed some of the title-arts
+
+	- quality of life
+	  . implemented approximate selection everywhere
+	  . rearrange some of the code
+	  . added a bunch of new functions for scrolling
+
+	- fixes
+	  . a lot of things in connection to scrolling
+	  . some bugs in profile menu
