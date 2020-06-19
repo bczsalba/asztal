@@ -27,7 +27,7 @@ Asztal features 5 main profiles:
 ### Grades:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/grades.png alt=grades>
 
-Lists all grades in a selected order using a selected style and sorting method for both grades and subjects. (more on that in [settings](#settings&#46;py))
+Lists all grades in a selected order using a selected style and sorting method for both grades and subjects. (more on that in [settings](#settingspy))
  
 From the "main" menu there are 3 additional submenus:
  
@@ -66,13 +66,13 @@ Can be overwritten by [forcett.py](#extras)
 ### Profiles:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/profiles.png alt=profiles>
 
-A menu to add, delete and manage kreta profiles used by asztal, uses [usercfg](#usercfg&#46;py) to store data.
+A menu to add, delete and manage kreta profiles used by asztal, uses [usercfg](#usercfgpy) to store data.
 	
 	
 ### Settings:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/settings.png alt=settings>
 
-Allows for changing some values to shift how asztal works, stores data in [settings](#settings&#46;py).
+Allows for changing some values to shift how asztal works, stores data in [settings](#settingspy).
 	
 	
 ### Update:
