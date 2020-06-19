@@ -17,7 +17,20 @@ As I haven't been able to make an Android, iOS or even web version it is only av
 	
 ##### Desktop:
  - Just `git clone` and run asztal&#46;py
-	
+ - ...or for a more hands-off approach:
+ 
+```
+# this code will install asztal in your home directory, and create a launcher on your desktop.
+# replace <extension> with 'command' for MacOS, 'sh' for anything else
+cd $HOME
+git clone https://github.com/bczsalba/asztal
+cd asztal
+echo '#!/bin/bash\n$HOME/asztal/asztal.py' >> $HOME/Desktop/asztal.<extension>
+sudo chmod +x $HOME/Desktop/asztal.<extension>
+sudo chmod +x $HOME/asztal/asztal.py
+python3 asztal.py
+```
+
 The mobile versions are not ideal, but again I haven't been able to figure out a way to run it in a better way. If you have an idea you think would work, please contact me and tell me about it.
 
 
