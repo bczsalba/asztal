@@ -1,5 +1,5 @@
 # Asztal: A python implementation of the Kreta API compiled by boapps.
-
+<img src=https://github.com/bczsalba/asztal-images/blob/master/title.png a=title>
 
 The program itself doesn't have 100% of Kreta's functionality, as I only wrote it because I got fed up with how bad the official Kreta app was. This version is way faster and was really just a good exercise to start my coding adventure. Writing it took way longer than anticipated, but I'm proud of the end result. 
 
@@ -25,9 +25,11 @@ The mobile versions are not ideal, but again I haven't been able to figure out a
 Asztal features 5 main profiles:
 	
 ### Grades:
- Lists all grades in a selected order using a selected style. (more on that later) 
+<img src=https://github.com/bczsalba/asztal-images/blob/master/grades.png alt=grades>
+
+Lists all grades in a selected order using a selected style. (more on that later) 
  
- From the "main" menu there are 3 additional submenus:
+From the "main" menu there are 3 additional submenus:
  
  ##### overall:
 - shows rounded average of all subjects
@@ -47,23 +49,33 @@ Asztal features 5 main profiles:
 -- or from the 6th subject's menu: `s555`
 	
 ### Recents:
+<img src=https://github.com/bczsalba/asztal-images/blob/master/recents.png alt=recents>
+
 Shows all grades sorted by time of registry in a single print from top to bottom.
 	
 ### Timetable:
+<img src=https://github.com/bczsalba/asztal-images/blob/master/timetable.png alt=timetable>
+
 Shows a menu displaying the user's timetable. Input takes the value 'ttdefault' into consideration. 
 
 A single digit input sets the value specified in ttdefault, while `('d' or 'l')+digit` sets the value for either the day or lesson.
 	
 	
 ### Profiles:
+<img src=https://github.com/bczsalba/asztal-images/blob/master/profiles.png alt=profiles>
+
 A menu to add, delete and manage kreta profiles used by asztal, pretty self explanatory.
 	
 	
 ### Settings:
+<img src=https://github.com/bczsalba/asztal-images/blob/master/settings.png alt=settings>
+
 Allows for changing some values to shift how asztal works.
 	
 	
 ### Update:
+<img src=https://github.com/bczsalba/asztal-images/blob/master/update.png alt=update>
+
 Shows the most recent changelog, allows for either updating if a new version is available or force-updating if not.
 
 **All menus that feature a selection of sorts accept an index or the first 2 characters of the choice, except for timetable as I haven't felt like it would be of much use.**  
@@ -107,6 +119,29 @@ keeps track of whatever is going on in the program, useful if something goes wro
 
 	
 **+ files denoted with "\*" also keep backups of themselves, so if something is invalid it dynamically rolls back.**
+
+# Extras
+
+There are some extra features not immediately apparent:
+- `./asztal.py -o` will force the program to not connect to Kreta servers, thus opening quicker but it won't use up-to-date grades.
+- creating a json-formatted file titled `forcett.py` will make asztal use that file as a source of the timetable.
+```
+~/asztal/forcett.py
+--------------------
+
+timetable = [
+	[
+        {
+            "start": "09:30:00",
+            "end": "11:00:00",
+            "subject": "Mathematics",
+            "classroom": "Second corridor on the left",
+            "teacher": "Albert Einstein"
+        },
+	...
+    ]
+]
+```
 
 
 # Disclaimer
