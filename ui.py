@@ -153,9 +153,9 @@ def breakLine(_inline,_padLen=0,_len=tWidth,_separator=' '):
 
 # pads string to center in _len
 def padded(_str,_len=tWidth):
-    mult = round(_len/2-len(clean_ansi(_str))/2)
-    if not mult % 2 == 0:
-        mult -= 1
+    mult = round( (_len-len(clean_ansi(_str)))/2 )
+    #if not mult % 2 == 0:
+    #    mult -= 1
     pad = mult*' '
     return pad+_str
 
@@ -277,32 +277,30 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
         cols.reverse()
 
         tprint('\n\n\n\n')
-        maxtlen = min(max(len(l) for l in titleLines)+2,tWidth)
+        maxtlen = max(len(l) for l in titleLines)
         maxlen = int(max(len(clean_ansi(l)) for l in items)*1.37)
         
-        tpad = 1-(maxtlen % 2)
         npad = 1-(maxlen % 2)
-        dbg(str(tpad),str(npad))
         for l in titleLines:
-            tprint((1-tpad)*' '+padded(color.bold+l+color.reset,_len=tWidth))
+            tprint(' '+padded(color.bold+l+color.reset))
 
         if len(titleLines) > 2:
-            tprint(' '+color.bold+padded('|',_len=tWidth+tpad)+color.reset)
+            tprint(round(tWidth/2)*' '+'|'+color.reset)
         else:
             tprint('')
         
-        #extra = (0 if maxtlen % 2 == tWidth % 2 else 1)
-        borderlen = maxlen+tpad
+        borderlen = maxlen-npad
+        dbg(str(maxlen),str(npad))
 
-        tprint(color.bold+'  '+padded((borderlen)*'-'))
+        tprint(color.bold+' '+padded((borderlen)*'-'))
         for i,s in enumerate(items):
             c = (cols[int(i)] if i > 1 else '')
             i -= 1
             index = (str(i-1)+'. ' if i > 0 else '')
-            l = '  '+padded(printBetween(index+c+s,_len=borderlen+npad+1,noPrint=True,_char=color.bold+'|'))
+            l = ' '+padded(printBetween(index+c+s,_len=borderlen+1,noPrint=True,_char=color.bold+'|'))
             tprint(l)
 
-        tprint('  '+padded((borderlen)*'-')+color.reset)
+        tprint(' '+padded((borderlen)*'-')+color.reset)
         padBottom()
 
     #sets choice
