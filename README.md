@@ -27,7 +27,7 @@ Asztal features 5 main profiles:
 ### Grades:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/grades.png alt=grades>
 
-Lists all grades in a selected order using a selected style. (more on that in [extras](https://github.com/bczsalba/asztal#settings))
+Lists all grades in a selected order using a selected style. (more on that in [extras](#settings))
  
 From the "main" menu there are 3 additional submenus:
  
@@ -60,7 +60,7 @@ Shows a menu displaying the user's timetable. Input takes the value 'ttdefault' 
 
 A single digit input sets the value specified in ttdefault, while `('d' or 'l')+digit` sets the value for either the day or lesson.
 
-Can be overwritten by [forcett.py](https://github.com/bczsalba/asztal#extras)
+Can be overwritten by [forcett.py](#extras)
 	
 	
 ### Profiles:
