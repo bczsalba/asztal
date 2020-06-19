@@ -59,11 +59,11 @@ A single digit input sets the value specified in ttdefault, while `('d' or 'l')+
 A menu to add, delete and manage kreta profiles used by asztal, pretty self explanatory.
 	
 	
-#### Settings:
+### Settings:
 Allows for changing some values to shift how asztal works.
 	
 	
-#### Update:
+### Update:
 Shows the most recent changelog, allows for either updating if a new version is available or force-updating if not.
 
 **All menus that feature a selection of sorts accept an index or the first 2 characters of the choice, except for timetable as I haven't felt like it would be of much use.**  
@@ -71,38 +71,38 @@ Shows the most recent changelog, allows for either updating if a new version is 
 # Technicalities
 Asztal has 3 scripts:
 	
-##### asztal:
+### asztal:
 launches the program, handles api.py and starts the ui.
 	
-##### api:
+### api:
 based on the methods of both boapps' documentation and some of the Filc source code, logs users in and gets their data.
 	
-##### ui:
+### ui:
 probably like 90% of the actual code, handles every part of the... well.. ui.
 	
-##### update:
+### update:
 just for a sneaky twist this handles updating asztal, and as sometimes things go wrong this is callable without running everything else to force update all files.
 	
 
-#### Additionally it creates some extra files:
+### Additionally it creates some extra files:
 
-##### marks:
+#### marks:
 created by api.py, stores data on the currently logged in user.
 
 	
-##### \*usercfg:
+#### \*usercfg:
 stores data of all users in a json format, however as it is unencrypted its not great, but as all but one people I've known use the default values it didn't seem too important.
 
 yes, it doesnt make much sense storing it in a json format and no, I do not know why I did it.
 	
 	
-##### \*settings:
+#### \*settings:
 self-explanatory, stores the settings for asztal.
 
 **important**: the comments on it are used for printing and value detection, so editing them will likely break some parts of asztal.
 	
 	
-##### log:
+#### log:
 keeps track of whatever is going on in the program, useful if something goes wrong but probably won't be of much use to anyone not working on the code.
 
 	
