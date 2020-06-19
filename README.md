@@ -27,7 +27,7 @@ Asztal features 5 main profiles:
 ### Grades:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/grades.png alt=grades>
 
-Lists all grades in a selected order using a selected style. (more on that in [settings](#settings))
+Lists all grades in a selected order using a selected style and sorting method for both grades and subjects. (more on that in [settings](#settings))
  
 From the "main" menu there are 3 additional submenus:
  
@@ -66,19 +66,20 @@ Can be overwritten by [forcett.py](#extras)
 ### Profiles:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/profiles.png alt=profiles>
 
-A menu to add, delete and manage kreta profiles used by asztal, pretty self explanatory.
+A menu to add, delete and manage kreta profiles used by asztal, uses [usercfg](#usercfg) to store data.
 	
 	
 ### Settings:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/settings.png alt=settings>
 
-Allows for changing some values to shift how asztal works.
+Allows for changing some values to shift how asztal works, stores data in [settings](#settings).
 	
 	
 ### Update:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/update.png alt=update>
 
 Shows the most recent changelog, allows for either updating if a new version is available or force-updating if not.
+The [update script](update) can be called without running asztal if some settings were to go awry.
 
 **All menus that feature a selection of sorts accept an index or the first 2 characters of the choice, except for timetable as I haven't felt like it would be of much use.**  
 
@@ -147,4 +148,5 @@ timetable = [
 
 
 # Disclaimer
-Has only been tested for 2 schools, and it didn't want to work with the non-kreta one. Not sure why this is, but I'll be looking to fix it. (if you try it with any school please let me know if it worked or not)
+Has only been tested for 2 schools, and it didn't want to work with the non-kreta one. Not sure why this is, but I'll be looking to fix it. 
+(if you try it with any school please let me know if it worked or not)
