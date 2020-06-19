@@ -1,5 +1,5 @@
 # Asztal: A python implementation of the Kreta API compiled by boapps.
-<img src=https://github.com/bczsalba/asztal-images/blob/master/title.png a=title>
+<img src=https://github.com/bczsalba/asztal-images/blob/master/title.gif a=title>
 
 The program itself doesn't have 100% of Kreta's functionality, as I only wrote it because I got fed up with how bad the official Kreta app was. This version is way faster and was really just a good exercise to start my coding adventure. Writing it took way longer than anticipated, but I'm proud of the end result. 
 
