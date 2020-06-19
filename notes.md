@@ -1,22 +1,16 @@
 ## roadmap
-1.00
-- set up wizard for first login
-- make title more beautiful
 
 ## yes
+- add gifs to all menus in README.md
 
 ## maybe
 
 ## ideas
+- set up wizard for first login
 - compact view for main
 
 ## continue
 
 ## changelog
-- reworked recents display
-- implemented approximate input selection in settings
-- some changes in profiles
-
 
 ## bugs
-- some of the arts dont center properly and i just gave up lol
