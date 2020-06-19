@@ -27,7 +27,7 @@ Asztal features 5 main profiles:
 ### Grades:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/grades.png alt=grades>
 
-Lists all grades in a selected order using a selected style. (more on that later) 
+Lists all grades in a selected order using a selected style. (more on that in [extras](https://github.com/bczsalba/asztal#settings) 
  
 From the "main" menu there are 3 additional submenus:
  
@@ -59,6 +59,8 @@ Shows all grades sorted by time of registry in a single print from top to bottom
 Shows a menu displaying the user's timetable. Input takes the value 'ttdefault' into consideration. 
 
 A single digit input sets the value specified in ttdefault, while `('d' or 'l')+digit` sets the value for either the day or lesson.
+
+Can be overwritten by [forcett.py](https://github.com/bczsalba/asztal#extras)
 	
 	
 ### Profiles:
@@ -84,41 +86,41 @@ Shows the most recent changelog, allows for either updating if a new version is 
 Asztal has 3 scripts:
 	
 ### asztal:
-launches the program, handles api.py and starts the ui.
+Launches the program, handles api.py and starts the ui.
 	
 ### api:
-based on the methods of both boapps' documentation and some of the Filc source code, logs users in and gets their data.
+Based on the methods of both boapps' documentation and some of the Filc source code, logs users in and gets their data.
 	
 ### ui:
-probably like 90% of the actual code, handles every part of the... well.. ui.
+Probably like 90% of the actual code, handles every part of the... well.. ui.
 	
 ### update:
-just for a sneaky twist this handles updating asztal, and as sometimes things go wrong this is callable without running everything else to force update all files.
+Handles updating asztal, and as sometimes things go wrong this is callable without running everything else to force update all files.
 	
 
 ### Additionally it creates some extra files:
 
 #### marks:
-created by api.py, stores data on the currently logged in user.
+Created by api.py, stores data on the currently logged in user.
 
 	
 #### \*usercfg:
-stores data of all users in a json format, however as it is unencrypted its not great, but as all but one people I've known use the default values it didn't seem too important.
+Stores data of all users in a json format, however as it is unencrypted its not great, but as all but one people I've known use the default values it didn't seem too important.
 
-yes, it doesnt make much sense storing it in a json format and no, I do not know why I did it.
+Yes, it doesnt make much sense storing it in a json format and no, I do not know why I did it.
 	
 	
 #### \*settings:
-self-explanatory, stores the settings for asztal.
+Self-explanatory, stores the settings for asztal.
 
 **important**: the comments on it are used for printing and value detection, so editing them will likely break some parts of asztal.
 	
 	
 #### log:
-keeps track of whatever is going on in the program, useful if something goes wrong but probably won't be of much use to anyone not working on the code.
+Keeps track of whatever is going on in the program, useful if something goes wrong but probably won't be of much use to anyone not working on the code.
 
 	
-**+ files denoted with "\*" also keep backups of themselves, so if something is invalid it dynamically rolls back.**
+**files denoted with "\*" also keep backups of themselves, so if something is invalid it dynamically rolls back.**
 
 # Extras
 
