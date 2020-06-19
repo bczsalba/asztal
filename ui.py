@@ -294,15 +294,15 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
         #extra = (0 if maxtlen % 2 == tWidth % 2 else 1)
         borderlen = maxlen+tpad
 
-        tprint(color.bold+' '+padded((borderlen)*'-'))
+        tprint(color.bold+'  '+padded((borderlen)*'-'))
         for i,s in enumerate(items):
             c = (cols[int(i)] if i > 1 else '')
             i -= 1
             index = (str(i-1)+'. ' if i > 0 else '')
-            l = padded('   '+printBetween(index+c+s,_len=borderlen+npad+1,noPrint=True,_char=color.bold+'|'))
+            l = '  '+padded(printBetween(index+c+s,_len=borderlen+npad+1,noPrint=True,_char=color.bold+'|'))
             tprint(l)
 
-        tprint(' '+padded((borderlen)*'-')+color.reset)
+        tprint('  '+padded((borderlen)*'-')+color.reset)
         padBottom()
 
     #sets choice
