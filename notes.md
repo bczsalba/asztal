@@ -2,6 +2,7 @@
 
 ## yes
 - add gifs to all menus in README.md
+- add padding to both sides in grades
 
 ## maybe
 
