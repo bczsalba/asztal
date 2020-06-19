@@ -27,7 +27,7 @@ Asztal features 5 main profiles:
 ### Grades:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/grades.png alt=grades>
 
-Lists all grades in a selected order using a selected style and sorting method for both grades and subjects. (more on that in [settings](#settingspy))
+Lists all grades in a selected order using a selected style and sorting method for both grades and subjects. (more on that in [settings](#settings))
  
 From the "main" menu there are 3 additional submenus:
  
@@ -79,7 +79,7 @@ Allows for changing some values to shift how asztal works, stores data in [setti
 <img src=https://github.com/bczsalba/asztal-images/blob/master/update.png alt=update>
 
 Shows the most recent changelog, allows for either updating if a new version is available or force-updating if not.
-The [update script](update&#46;py) can be called without running asztal if some settings were to go awry.
+The [update script](updatepy) can be called without running asztal if some settings were to go awry.
 
 **All menus that feature a selection of sorts accept an index or the first 2 characters of the choice, except for timetable as I haven't felt like it would be of much use.**  
 
