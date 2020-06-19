@@ -16,7 +16,7 @@ As I haven't been able to make an Android, iOS or even web version it is only av
  - Should work with any Python interpreter available, and has in the past been tested (and written in) Pythonista, a payed Python editor app. Again, just import the files to the app's folder and run it from there.
 	
 ##### Desktop:
- - Just `git clone` and run `asztal.py`
+ - Just `git clone` and run asztal&#46;py
 	
 The mobile versions are not ideal, but again I haven't been able to figure out a way to run it in a better way. If you have an idea you think would work, please contact me and tell me about it.
 
@@ -27,7 +27,7 @@ Asztal features 5 main profiles:
 ### Grades:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/grades.png alt=grades>
 
-Lists all grades in a selected order using a selected style and sorting method for both grades and subjects. (more on that in [settings](#settings))
+Lists all grades in a selected order using a selected style and sorting method for both grades and subjects. (more on that in [settings](#settings&#46;py))
  
 From the "main" menu there are 3 additional submenus:
  
@@ -66,52 +66,52 @@ Can be overwritten by [forcett.py](#extras)
 ### Profiles:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/profiles.png alt=profiles>
 
-A menu to add, delete and manage kreta profiles used by asztal, uses [usercfg](#usercfg) to store data.
+A menu to add, delete and manage kreta profiles used by asztal, uses [usercfg](#usercfg&#46;py) to store data.
 	
 	
 ### Settings:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/settings.png alt=settings>
 
-Allows for changing some values to shift how asztal works, stores data in [settings](#settings).
+Allows for changing some values to shift how asztal works, stores data in [settings](#settings&#46;py).
 	
 	
 ### Update:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/update.png alt=update>
 
 Shows the most recent changelog, allows for either updating if a new version is available or force-updating if not.
-The [update script](update) can be called without running asztal if some settings were to go awry.
+The [update script](update&#46;py) can be called without running asztal if some settings were to go awry.
 
 **All menus that feature a selection of sorts accept an index or the first 2 characters of the choice, except for timetable as I haven't felt like it would be of much use.**  
 
 # Technicalities
 Asztal has 3 scripts:
 	
-### asztal:
+### asztal&#46;py:
 Launches the program, handles api.py and starts the ui.
 	
-### api:
+### api&#46;py:
 Based on the methods of both boapps' documentation and some of the Filc source code, logs users in and gets their data.
 	
-### ui:
+### ui&#46;py:
 Probably like 90% of the actual code, handles every part of the... well.. ui.
 	
-### update:
+### update&#46;py:
 Handles updating asztal, and as sometimes things go wrong this is callable without running everything else to force update all files.
 	
 
 ### Additionally it creates some extra files:
 
-#### marks:
+#### marks&#46;py:
 Created by api.py, stores data on the currently logged in user.
 
 	
-#### \*usercfg:
+#### \*usercfg&#46;py:
 Stores data of all users in a json format, however as it is unencrypted its not great, but as all but one people I've known use the default values it didn't seem too important.
 
 Yes, it doesnt make much sense storing it in a json format and no, I do not know why I did it.
 	
 	
-#### \*settings:
+#### \*settings&#46;py:
 Self-explanatory, stores the settings for asztal.
 
 **important**: the comments on it are used for printing and value detection, so editing them will likely break some parts of asztal.
