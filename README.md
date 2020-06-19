@@ -27,7 +27,7 @@ Asztal features 5 main profiles:
 ### Grades:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/grades.png alt=grades>
 
-Lists all grades in a selected order using a selected style. (more on that in [extras](#settings))
+Lists all grades in a selected order using a selected style. (more on that in [settings](#settings))
  
 From the "main" menu there are 3 additional submenus:
  
