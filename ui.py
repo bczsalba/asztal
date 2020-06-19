@@ -278,25 +278,31 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
 
         tprint('\n\n\n\n')
         maxtlen = min(max(len(l) for l in titleLines)+2,tWidth)
-        for l in titleLines:
-            tprint(padded(color.bold+l+color.reset))
-
         maxlen = int(max(len(clean_ansi(l)) for l in items)*1.37)
+        
+        tpad = 1-(maxtlen % 2)
+        npad = 1-(maxlen % 2)
+        dbg(str(tpad),str(npad))
+        for l in titleLines:
+            tprint((1-tpad)*' '+padded(color.bold+l+color.reset,_len=tWidth))
+
         if len(titleLines) > 2:
-            tprint(color.bold+padded('|',_len=tWidth)+color.reset)
+            tprint(' '+color.bold+padded('|',_len=tWidth+tpad)+color.reset)
         else:
             tprint('')
         
-        pad = (0 if maxtlen+tWidth % 2 == 0 else 1)
-        borderlen = maxlen-1+pad
+        #extra = (0 if maxtlen % 2 == tWidth % 2 else 1)
+        borderlen = maxlen+tpad
 
-        tprint(color.bold+padded((borderlen)*'-'))
+        tprint(color.bold+' '+padded((borderlen)*'-'))
         for i,s in enumerate(items):
             c = (cols[int(i)] if i > 1 else '')
             i -= 1
             index = (str(i-1)+'. ' if i > 0 else '')
-            tprint(padded(printBetween(index+c+s,_len=borderlen+pad,noPrint=True,_char=color.bold+'|')))
-        tprint(padded((borderlen)*'-')+color.reset)
+            l = padded('   '+printBetween(index+c+s,_len=borderlen+npad+1,noPrint=True,_char=color.bold+'|'))
+            tprint(l)
+
+        tprint(' '+padded((borderlen)*'-')+color.reset)
         padBottom()
 
     #sets choice
@@ -1608,7 +1614,6 @@ def showUpdate():
         changelog[i] = linePad+breakLine(l,_len=tWidth-len(linePad)-2,_padLen=len(linePad)+2)
 
     changelog = '\n'.join(changelog)
-    vrs = 0
     if newVersion > vrs:
         tprint(color.bold+('New version '+str(newVersion)+' available!').center(tWidth)+'\n\n'+'Changelog:'.center(tWidth)+color.reset)
     else:
@@ -1619,8 +1624,8 @@ def showUpdate():
         tprint(l)
     tprint(color.reset)
 
-    updateHint = makeHint('Update now',color.four)
-    forceHint = makeHint('Force update',color.four)
+    updateHint = makeHint('update now',color.four)
+    forceHint = makeHint('force update',color.four)
 
     if newVersion > vrs:
         hint = updateHint

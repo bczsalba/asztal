@@ -1,7 +1,7 @@
 1.00:
 	- ui
 	  . reworked titlescreen and recents menu
-	  .	implemented a whole new ui animation method 
+	  . implemented a whole new ui animation method 
 	  . fixed some of the title-arts
 
 	- quality of life
