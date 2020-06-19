@@ -134,8 +134,8 @@ There are some extra features not immediately apparent:
 timetable = [
 	[
         {
-            "start": "09:30:00",
-            "end": "11:00:00",
+            "start": "16:20:00",
+            "end": "7:30:00",
             "subject": "Mathematics",
             "classroom": "Second corridor on the left",
             "teacher": "Albert Einstein"
