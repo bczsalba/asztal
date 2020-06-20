@@ -88,7 +88,7 @@ Shows all grades sorted by time of registry in a single print from top to bottom
 
 Shows a menu displaying the user's timetable. Input takes the value 'ttdefault' into consideration. 
 
-A single digit input sets the value specified in ttdefault, while `('d' or 'l')+digit` sets the value for either the day or lesson.
+A single digit input sets the value specified in [ttdefault](#settingspy), while `('d' or 'l')+digit` sets the value for either the day or lesson.
 
 Can be overwritten by [forcett.py](#extras)
 	
@@ -97,6 +97,8 @@ Can be overwritten by [forcett.py](#extras)
 <img src=https://github.com/bczsalba/asztal-images/blob/master/profiles.png alt=profiles>
 
 A menu to add, delete and manage kreta profiles used by asztal, uses [usercfg](#usercfgpy) to store data.
+
+Has an option, [prettyUser](#settingspy) to show name instead of student ID.
 	
 	
 ### Settings:
