@@ -44,15 +44,15 @@ Lists all grades in a selected order using a selected style and sorting method f
  
 From the "main" menu there are 3 additional submenus:
  
- ##### overall:
+overall:
 - shows rounded average of all subjects
   allows for editing each value
 - once available, shows half and end of term grades, along with the halfterm's difference from either current or end of year.
  
-##### info: 
+info: 
 - shows info on all individual grades, like time of registry, theme, value and weight.
 	
-##### simulate:
+simulate:
  - can be accessed directly from the "main" menu in the format:
          ```<subject_index>s<grades_to_add(optional)> ```
 - or through info of either subject in the same format excluding the index as it's given.
@@ -61,6 +61,23 @@ From the "main" menu there are 3 additional submenus:
 	- to add 3 fives to the 6th subject from main: `6s555`
 	- or from the 6th subject's menu: `s555`
 	
+styles:
+- the "I put all my points into appearance and none into function", full:
+  
+  <img src=https://github.com/bczsalba/asztal-images/blob/master/grades_full.png alt=full width=400>
+
+- the default, grades:
+  
+  <img src=https://github.com/bczsalba/asztal-images/blob/master/grades_grade.png alt=grade width=400>
+
+- the awkward inbetweener, weight:
+  
+  <img src=https://github.com/bczsalba/asztal-images/blob/master/grades_weight.png alt=weight width=400>
+
+- and the techdemo, none:
+  
+  <img src=https://github.com/bczsalba/asztal-images/blob/master/grades_none.png alt=none width=400>
+
 ### Recents:
 <img src=https://github.com/bczsalba/asztal-images/blob/master/recents.png alt=recents>
 
