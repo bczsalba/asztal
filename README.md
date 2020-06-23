@@ -167,7 +167,7 @@ timetable = [
 	[
         {
             "start": "16:20:00",
-            "end": "7:30:00",
+            "end": "19:30:00",
             "subject": "Mathematics",
             "classroom": "Second corridor on the left",
             "teacher": "Albert Einstein"
