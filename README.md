@@ -36,7 +36,7 @@ This isn't too great, so to make it simpler you can do 2 things:
  - or on MacOS add a desktop shortcut:
    ```
    # The default terminal app on MacOS doesn't have GPU acceleration, so the animations
-   # might look laggy. To avoid this you can download a terminal like Kitty and set 
+   # might look laggy. To avoid this you can download a terminal like iTerm and set 
    # it default.
    #
    # create 'shortcut' icon
