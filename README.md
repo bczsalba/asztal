@@ -28,7 +28,7 @@ python3 -m pip install requests
 python3 asztal.py
 ```
 After this, you can launch asztal by running `cd $HOME/asztal && python3 asztal.py` in a terminal.
-This isn't too great, so to make it simpler you can do 2 things.
+This isn't too great, so to make it simpler you can do 2 things:
 
  - to start asztal by entering `asztal` into a bash terminal: 
  
