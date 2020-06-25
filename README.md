@@ -36,8 +36,8 @@ This isn't too great, so to make it simpler you can do 2 things:
  - or on MacOS add a desktop shortcut:
    ```
    # The default terminal app on MacOS doesn't have GPU acceleration, so the animations
-   # might look laggy. To avoid this you can download a terminal like iTerm and set 
-   # it default.
+   # might look laggy. To avoid this you can download an alternate terminal, or play 
+   # with the animTime value.
    #
    # create 'shortcut' icon
    echo -e '#!/bin/bash\npython3 $HOME/asztal/asztal.py' >> $HOME/Desktop/asztal.command
