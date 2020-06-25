@@ -170,8 +170,8 @@ There are some extra features not immediately apparent:
 - `./asztal.py -o` will force the program to not connect to Kreta servers, thus opening quicker but it won't use up-to-date grades.
 - creating a json-formatted file titled `forcett.py` will make asztal use that file as a source of the timetable.
 ```
-~/asztal/forcett.py
---------------------
+~/asztal/forcett.py |
+---------------------
 
 timetable = [
 	[
