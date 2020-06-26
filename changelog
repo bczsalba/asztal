@@ -1,4 +1,3 @@
-1.01:
-- fixed some things caused by wreckless `git reset --hard` usage
-- fixed title centering
-- created and added README.md
+1.02:
+- fixed asztal not looking in the right directory for settings
+- adjusted default animTime

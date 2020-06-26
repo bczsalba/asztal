@@ -20,20 +20,22 @@ def refresh():
 #import settings, create file if failed
 try: from settings import debug
 except Exception as e:
-    print(str(e))
-    
-    if 'settings_backup' in os.listdir():
+    dbg(str(e))
+
+    files = os.listdir(curdir)
+    if 'settings_backup' in files:
         shutil.copyfile('settings_default','settings.py')
         time.sleep(0.1)
-        from settings import debug
-    
-    elif 'settings_default' in os.listdir():
+        from settings import debug 
+    elif 'settings_default' in files:
         shutil.copyfile('settings_default','settings.py')
         time.sleep(0.1)
         from settings import debug
     
     else:
-        print('No settings.py in directory and no default_settings found.')
+        print('No settings.py in directory and no default_settings found.\n Check log for info.')
+        with open(os.path.join(curdir,'log'),'a') as f:
+            f.write(f'no settings in directory ({curdir}): {repr(files)}')
         if input('Run update.py to solve this issue? [Y]n ').lower in ['y','']:
             import update
             update.start()
@@ -67,7 +69,6 @@ if __name__ == '__main__':
     try:
         try:
             from usercfg import users
-            #dbg('NOTE: remove hasAttr check for isDefault')
         except:
             if 'usercfg_backup' in os.listdir(curdir):
                 shutil.copyfile(os.path.join(curdir,'usercfg_backup'),os.path.join(curdir,'usercfg.py'))
@@ -76,7 +77,7 @@ if __name__ == '__main__':
             else:
                 #if none is present create with createUser
                 users = createUser()
-                clr()
+                clr(f=1)
 
         #add default attribute to users
         change = False

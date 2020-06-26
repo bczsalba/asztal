@@ -15,3 +15,4 @@
 ## changelog
 
 ## bugs
+- "grade" works but grades dont haha

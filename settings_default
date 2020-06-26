@@ -25,5 +25,5 @@ gradeSorter = "time"
 colorMode = "grade"
 ttdefault = "l"
 prettyUser = "True"
-animTime = 5
+animTime = 3
 animation = "scrolling"
