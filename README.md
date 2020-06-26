@@ -34,7 +34,7 @@ This isn't too great, so to make it simpler you can do 2 things:
  
    `echo "alias asztal='cd $HOME/asztal && python3 asztal.py'" >> $HOME/.bashrc && bash` 
  - or on MacOS add a desktop shortcut:
-   ``` 
+   ```
    # create 'shortcut' icon
    echo -e '#!/bin/bash\npython3 $HOME/asztal/asztal.py' >> $HOME/Desktop/asztal.command
    # make executable // will need administrator password
@@ -43,6 +43,8 @@ This isn't too great, so to make it simpler you can do 2 things:
    
    depending on your system it may look laggy, since Terminal.app doesn't have GPU acceleration. To fix it you can download [Kitty](https://sw.kovidgoyal.net/kitty/index.html) and run:
    ```
+   # remove previous icon
+   rm $HOME/Desktop/asztal.command
    # create icon
    echo -e "#!/bin/bash\nsleep 0.2\nkitty -1 sh -c "python3 $HOME/asztal/asztal.py" >> $HOME/Desktop/asztal.command
    # make executable
