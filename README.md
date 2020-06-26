@@ -1,14 +1,14 @@
 # Asztal: A python implementation of the Kreta API compiled by boapps.
 <img src=https://github.com/bczsalba/asztal-images/blob/master/title.gif a=title>
 
-This program is mostly a result of how user-unfriendly the official Kreta app is, and how much freetime I've had over the past 6 months. Since it was originally only meant to be used by me and some friends it doesn't offer 100% of what the app can do, but it should work for pretty much all usecases.
+This program is mostly a result of how user-unfriendly the official Kreta app is, and how much free time I've had over the past 6 months. Since it was originally only meant to be used by me and some friends it doesn't offer 100% of what the app can do, but it should work for pretty much all usecases.
 
 Since I started programming with this project it has seen many rewrites, and it could be improved a lot, something I'm planning to do in the future. Most things are pretty well commented, and since we're not launching rockets to space it shouldnt be too complicated to figure out when something isn't.
 
 As of right now I haven't been able to package it for any platform specifically, and so running it from anywhere but desktop isn't as easy as it should be, however it works perfectly fine once you set it up.
 	
 ##### Android:
- - I recommend using Termux and installing asztal there, like with Desktop. 
+ - I recommend using Termux and following the [Desktop](#Desktop) instructions.
  - If you edit the .bashrc file and add the path to your asztal.py you can repurpose the app to just serve as a way to run it.
 
 ##### iOS:
@@ -34,14 +34,18 @@ This isn't too great, so to make it simpler you can do 2 things:
  
    `echo "alias asztal='cd $HOME/asztal && python3 asztal.py'" >> $HOME/.bashrc && bash` 
  - or on MacOS add a desktop shortcut:
-   ```
-   # The default terminal app on MacOS doesn't have GPU acceleration, so the animations
-   # might look laggy. To avoid this you can download an alternate terminal, or play 
-   # with the animTime value.
-   #
+   ``` 
    # create 'shortcut' icon
    echo -e '#!/bin/bash\npython3 $HOME/asztal/asztal.py' >> $HOME/Desktop/asztal.command
    # make executable // will need administrator password
+   sudo chmod +x $HOME/Desktop/asztal.command
+   ```
+   
+   depending on your system it may look laggy, since Terminal.app doesn't have GPU acceleration. To fix it you can download [Kitty](https://sw.kovidgoyal.net/kitty/index.html) and run:
+   ```
+   # create icon
+   echo -e "#!/bin/bash\nsleep 0.2\nkitty -1 sh -c "python3 $HOME/asztal/asztal.py" >> $HOME/Desktop/asztal.command
+   # make executable
    sudo chmod +x $HOME/Desktop/asztal.command
    ```
 
