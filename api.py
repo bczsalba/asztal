@@ -5,45 +5,9 @@ import http.client as httplib
 import time as timeModule
 from random import randint
 
-from ui import tWidth
-
-# totally legally yoinked from filc source
-randomDeviceNames = [
-    "coral",
-    "flame",
-    "clark",
-    "walleye",
-    "a6eltemtr",
-    "gracelte",
-    "klte",
-    "kwifi",
-    "zerofltectc",
-    "heroqltecctvzw",
-    "a50",
-    "beyond1",
-    "H8416",
-    "SOV38",
-    "a6lte",
-    "OnePlus7",
-    "flashlmdd",
-    "hammerhead",
-    "mako",
-    "lucye",
-    "bullhead",
-    "griffin",
-    "h1",
-    "HWBKL",
-    "HWMHA",
-    "HWALP",
-    "cheeseburger",
-    "bonito",
-    "crosshatch",
-    "taimen",
-    "blueline"
-  ]
-
-device = randomDeviceNames[randint(0,len(randomDeviceNames)-1)]
+tWidth = os.get_terminal_size()[0]
 verboseGlobal = True
+log = None
 
 def dbg(s):
     if verboseGlobal == True:
@@ -57,38 +21,30 @@ def dbg(s):
             log(s,show=0)
 
 def connected():
-    print('hey')
     conn = httplib.HTTPConnection("8.8", timeout=1)
     try:
         conn.request("HEAD", "/")
         conn.close()
-        print('yay')
         return True
     except Exception as e:
-        #print(e)
-        #if input(''):
-        #    pass
         conn.close()
         return False
 
 def Bearer(user,pwd,ist): 
-    clientID = "919e0c1c-76a2-4646-a2fb-7085bbbf3c56"
-
     headers = {
-            'HOST': f'{ist}.e-kreta.hu',
             'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
-            'User-Agent': f'Kreta.Ellenorzo/2.9.10.2020031602 (Android; {device} 0.0)'
-            }
+            'User-Agent': 'hu.ekreta.student/1.0.5/Android/0/0'
+    }
     data = {
-        'institute_code': ist,
         'userName': user,
         'password': pwd,
+        'institute_code': ist,
         'grant_type': 'password',
-        'client_id': clientID
-        }
+        'client_id': "kreta-ellenorzo-mobile"
+    }
 
     try:
-        maci = requests.post('https://{}.e-kreta.hu/idp/api/v1/Token'.format(ist), headers=headers, data=data)
+        maci = requests.post('https://idp.e-kreta.hu/connect/token', headers=headers, data=data)
     except requests.exceptions.ConnectionError:
         if not connected():
             return 'offline'
@@ -97,24 +53,22 @@ def Bearer(user,pwd,ist):
             return 'err: invalid_institute'
 
     #maci = requests.post('https://{}.e-kreta.hu/idp/api/v1/Token'.format(ist), headers=headers)
-    try:
-        maci = json.loads(maci.text)['access_token']
-    except KeyError:
-        print('Invalid login credentials.'.center(tWidth))
-        return 'err: invalid_response'
-    except Exception as e:
-        dbg(str(e))
-        print('Bad response from Kreta, the server is likely offline.'.center(tWidth))
-        print(f'For more info check {ist}.ekreta.hu.'.center(tWidth))
-        if input(''): pass
-        return 'offline'
+    if maci:
+        try:
+            maci = json.loads(maci.text)['access_token']
+        except KeyError as e:
+            print(str(e))
+            return 'err: invalid_response'
+        except Exception as e:
+            dbg(str(e))
+            print('Bad response from Kreta, the server is likely offline.'.center(tWidth))
+            print(f'For more info check {ist}.ekreta.hu.'.center(tWidth))
+            if input(''): pass
+            return 'offline'
+    else:
+        print(maci.text.center(tWidth))
 
     dbg('Maci acquired.')
-    
-    #try:
-    #    maci = maci.text.split('"')[3]
-    #except:
-    #    return 'offline'
     
     return maci
 
@@ -129,8 +83,6 @@ class Student:
         if not verbose == None:
             verboseGlobal = verbose
         
-        #dbg(usr+pwd+ist)
-
         ##store user data
         self.usr = usr
         self.pwd = pwd
@@ -169,11 +121,10 @@ class Student:
 
         ##defining headers for marks and timetable to use
         self.headers = {
-                'HOST': f'{self.ist}.e-kreta.hu',
-                'User-Agent': f'Kreta.Ellenorzo/2.9.10.2020031602 (Android; {device} 0.0)',
-                'Authorization': 'Bearer {}'.format(self.maci)
-                }
-        
+                "Authorization": "Bearer "+self.maci,
+                "User-Agent": "hu.ekreta.student/1.0.5/Android/0/0"
+        }
+
         ##getting marks, timetable
         self.marks,self.subjectsList = self.getMarks()
         try:
@@ -181,6 +132,8 @@ class Student:
             self.timetable = forcett.timetable
         except:
             self.timetable = Timetable(self).get()
+
+        self.getInfo()
 
         ##saving data
         self.serialize()
@@ -190,57 +143,47 @@ class Student:
     def getMarks(self):
         ##make connection
         dbg('Getting marks...')
-        marksResponse = requests.get(f'https://{self.ist}.e-kreta.hu/mapi/api/v1/Student', headers=self.headers)                
+        marksResponse = requests.get(f'https://{self.ist}.ekreta.hu/ellenorzo/V3/Sajat/Ertekelesek', headers=self.headers)                
         self.marksText = marksResponse.text
         
-        #with open('sample_marks','w') as f:
-        #    f.write(self.marksText)
-
+        with open('sample_marks','w') as f:
+            f.write(self.marksText)
 
         ##filter data
         marks = []
         subjectsList = []
         mk = json.loads(self.marksText)
-        self.name = mk['Name']
-        
-        #get birthday
-        self.bdayDate = mk['DateOfBirthUtc'].split('T')[0].split('-')[1:]
-        self.bdayDate[1] = str(int(self.bdayDate[1])+1)
-        if len(self.bdayDate[1]) == 1:
-            self.bdayDate[1] = '0'+self.bdayDate[1]
-
-        self.bdayDate = '-'.join(self.bdayDate)
-
-        today = str(timeModule.strftime('%m-%d'))
-        self.isBday = (today == self.bdayDate) 
-        #self.isBday = True
-
-
 
         dbg('Sorting marks...')
-        for mark in mk['Evaluations']:
-            subject = mark['Subject']
-            theme = mark['Theme']
-            _type = mark['Type']
-            value = mark['NumberValue']
-            if value == 0:
-                value = mark['Value']
+        for mark in mk:
+            subject = mark['Tantargy']['Nev']
+            theme = mark['Tema']
+            _type = mark['Tipus']['Nev']
+            value = mark['SzamErtek']
+            if value == None:
+                value = mark['SzovegesErtek']
 
-            weight = mark['Weight']
+            weight = mark['SulySzamErteke']
             teacher = mark['Teacher']
-            date = mark['CreatingTime'].split('T')[0]
-            time = mark['CreatingTime'].split('T')[1][:-4]
+            dateFull = mark['RogzitesDatuma']
+            date = dateFull.split('T')[0]
+            time = dateFull.split('T')[1][:-4]
             
-            if not _type == 'MidYear':
-                theme = 'Term'
-                weight = '100%'
+            if _type == 'felevi_jegy_ertekeles':
+                theme = 'Half term result'
+                weight = 100
 
-            ##add subject to subjectsList if not in there already
-            if not subject in subjectsList and not subject == None:
+            elif _type == 'evvegi_jegy_ertekeles':
+                theme = 'End of term result'
+                weight = 100
+
+
+            ## add subject to subjectsList if not in there already
+            if not subject in subjectsList and subject:
                 subjectsList.append(subject)
 
-            ##create marks dict
-            if not subject == None:
+            ## create marks dict
+            if subject:
                 marks.append(
                         {
                             'subject': subject,
@@ -251,7 +194,7 @@ class Student:
                             'date': date,
                             'time': time
                         }
-                    )
+                )
 
 
         ##sort data
@@ -260,15 +203,43 @@ class Student:
         ##return a list containing mark dicts
         return marks,subjectsList
 
+    #get info about user
+    def getInfo(self):
+        # returns info about the student
+        response = requests.get(
+                'https://'+self.ist+'.ekreta.hu/ellenorzo/V3/Sajat/TanuloAdatlap',
+                headers = self.headers,
+        )
+        
+        info = json.loads(response.text)
+        self.name = info['Nev']
+        
+        #get birthday
+        self.bdayDate = info['SzuletesiDatum'].split('T')[0].split('-')[1:]
+        self.bdayDate[1] = str(int(self.bdayDate[1])+1)
+        if len(self.bdayDate[1]) == 1:
+            self.bdayDate[1] = '0'+self.bdayDate[1]
+
+        self.bdayDate = '-'.join(self.bdayDate)
+
+        today = str(timeModule.strftime('%m-%d'))
+        self.isBday = (today == self.bdayDate) 
+
     ##store data in a json file self.jsonLocation (assigned at creation)
     def serialize(self):
         with open(self.jsonLocation,'wb') as mks:
+            mks.write(b'# these are needed because im importing the module and not json\n')
+            mks.write(b'null = None\n')
+            mks.write(b'false = False\n')
+            mks.write(b'true = True\n\n')
+
             ##convert lists to json
             mksJson = json.dumps(self.marks,ensure_ascii=False,indent=4)
             subListJson = json.dumps(self.subjectsList,ensure_ascii=False,indent=4)
             ttJson = json.dumps(self.timetable,ensure_ascii=False,indent=4)
 
             ##write json to file
+            mks.write(b'# data\n')
             mks.write((f'usr = \'{self.usr}\'\n').encode('utf-8'))
             mks.write((f'name = \'{self.name}\'\n\n').encode('utf-8'))
             mks.write((f'bday = {self.isBday}\n\n').encode('utf-8'))
@@ -289,7 +260,6 @@ class Timetable:
         #if we dont have both dates we get them
         if any((val == None for val in [start,end])):
             self.start,self.end,self.currentDay = self.getDates()
-
     
     def getDates(self):
         import datetime 
@@ -310,7 +280,6 @@ class Timetable:
         ##return start,end
         return startDate,endDate,current
 
-
     def get(self):
         ##separate on and offline mode
         if not self.parent.offline == False:
@@ -321,26 +290,35 @@ class Timetable:
         ##make connection
         dbg('Getting timetable...') 
         headers = self.parent.headers
-        params = (('fromDate', f'{self.start}'),('toDate', f'{self.end}'))#headers is global
-        ttResponse = requests.get(f'https://{self.ist}.e-kreta.hu/mapi/api/v1/Lesson', headers=headers, params=params)
+        params = {
+            'datumTol': f'{self.start}',
+            'datumIg': f'{self.end}'
+        }
 
+        ttResponse = requests.get(
+                f'https://{self.ist}.ekreta.hu/ellenorzo/V3/Sajat/OrarendElemek', 
+                headers=headers, 
+                params=params
+        )
 
         ##filter data
         days = []
         dbg('Sorting timetable...')
         tt = json.loads(ttResponse.text)
+        day = []
         for lesson in tt: 
-            #reset days
-            if lesson['Count'] == 1:
+            # reset days
+            if lesson['Oraszam'] == 1:
                 day = []
-
-            date = lesson['StartTime'].split('T')[0]
-            start = lesson['StartTime'].split('T')[1]
-            end = lesson['EndTime'].split('T')[1]
-            subject = lesson['Subject']
-            classroom = lesson['ClassRoom']
-            teacher = lesson['Teacher']
-            theme = lesson['Theme'] 
+            
+            startdate = lesson['KezdetIdopont']
+            date = startdate.split('T')[0]
+            start = startdate.split('T')[1][:-1]
+            end = lesson['VegIdopont'].split('T')[1][:-1]
+            subject = lesson['Tantargy']
+            classroom = lesson['TeremNeve']
+            teacher = lesson['TanarNeve']
+            theme = lesson['Tema'] 
             
 
             ##create day dict
@@ -355,16 +333,14 @@ class Timetable:
                 'theme': theme,
                 'isCurrent': self.isCurrent(start,end,date)
                 }
-                    )
+            )
 
             ##add day if not in days already
             if not day in days:
                 days.append(day)
 
-
         ##return a compound list containing each days lessons
         return days
-        
 
     def isCurrent(self,_start,_end,_date):
         ##convert start,end to datetime objects
@@ -376,4 +352,5 @@ class Timetable:
         current = datetime.datetime.now().time()
 
         #return if current is between start&end and the days match
-        return (1 if (start < current < end and currentDay == self.currentDay) else 0)
+        return (True if (start < current < end and currentDay == self.currentDay) else False)
+

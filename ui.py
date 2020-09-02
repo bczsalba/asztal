@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 
 #imports
-import os,shutil,sys,re,json,time,signal,math,random,datetime
+import os
+import shutil
+import sys
+import re
+import json
+import time
+import signal
+import math
+import random
+import datetime
 from getpass import getpass
 
 #used for log file
@@ -22,20 +31,31 @@ daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday']
 cursorUp = '\033[1A'
 silence = '\033[1A'+'\033[K'
 
-#color lesson
-class color:
-    one = '\033[31m'            #red
-    two = '\033[38;5;166m'      #orange/brown
-    three = '\033[38;5;226m'    #yellow
-    four = '\033[38;5;156m'     #light green
-    five = '\033[32m'           #green
-    fade = '\033[38;5;245m'     #grey
+#color
+def getColors():
+    c = {}
+    if customColors == 'True' and 'colors.py' in os.listdir(curdir):
+        import colors as cols
+        for name,value in zip(['one','two','three','four','five'],cols.colors):
+            c[name] = f'\033[38;5;{value}m'
 
-    reset = '\033[0m'           #reset
-    italic = '\033[3m'          #italic
-    bold = '\033[1m'            #bold
-    underline = '\033[4m'        #underline
-colors = [color.one,color.two,color.three,color.four,color.five]
+    else:
+        c['one'] = '\033[31m'            #red
+        c['two'] = '\033[38;5;166m'      #orange/brown
+        c['three'] = '\033[38;5;226m'    #yellow
+        c['four'] = '\033[38;5;156m'     #light green
+        c['five'] = '\033[32m'           #green
+    
+    c['fade'] = '\033[38;5;245m'
+    return [c['fade'],c['one'],c['two'],c['three'],c['four'],c['five']]
+
+colors = getColors()
+cmod = {
+        'reset': '\033[0m',
+        'bold': '\033[1m',
+        'italic': '\033[3m',
+        'underline': '\033[4m'
+}
 
 if not 'animTime' in globals():
     animTime = 10
@@ -116,7 +136,10 @@ def handleRecall():
         goto(0,0)
 
 try: from settings import tWidth
-except Exception as e: dbg(str(e));tWidth,tHeight = os.get_terminal_size()
+except Exception: 
+    dbg("No tWidth given, defaulting to dynamic.")
+    tWidth,tHeight = os.get_terminal_size()
+
 border = (round(tWidth/2)-1)*'-='+'-'
 
 #from https://stackoverflow.com/a/38662876; rid string of ansi sequences
@@ -154,8 +177,6 @@ def breakLine(_inline,_padLen=0,_len=tWidth,_separator=' '):
 # pads string to center in _len
 def padded(_str,_len=tWidth):
     mult = round( (_len-len(clean_ansi(_str)))/2 )
-    #if not mult % 2 == 0:
-    #    mult -= 1
     pad = mult*' '
     return pad+_str
 
@@ -163,9 +184,9 @@ def underline(s,index=None,clr=''):
     out = ''
     for i,c in enumerate(s):
         if index == None or index == i:
-            out += color.underline+clr+c+color.reset
+            out += cmod['underline']+clr+c+cmod['reset']
         else:
-            out += clr+color.bold+c+color.reset
+            out += clr+cmod['bold']+c+cmod['reset']
     return out
 
 def makeHint(s,col='',_index=None,noUnderline=False):
@@ -182,7 +203,7 @@ def makeHint(s,col='',_index=None,noUnderline=False):
         ind = 0
 
     
-    return color.bold+'[ '+underline(s,ind,color.bold+col)+color.bold+' ]'+color.reset
+    return cmod['bold']+'[ '+underline(s,ind,cmod['bold']+col)+cmod['bold']+' ]'+cmod['reset']
 
 def spaceHint(hints,spacer=' '):
     spaced = spacer.join(hints)
@@ -193,7 +214,7 @@ def spaceHint(hints,spacer=' '):
         return '\n'.join([int((tWidth-maxLen)/2)*' '+h for h in hints])    
 
 def printBetween(s,_len=tWidth,_char='|',_pad=1,_offset=0,noPrint=False):
-    retrstr = _char+' '*_pad+s+color.reset+(_len-len(clean_ansi(s))-3-_pad)*' '+_char
+    retrstr = _char+' '*_pad+s+cmod['reset']+(_len-len(clean_ansi(s))-3-_pad)*' '+_char
     retrstr = _offset*' '+retrstr
     if noPrint:
         return retrstr
@@ -203,7 +224,7 @@ def printBetween(s,_len=tWidth,_char='|',_pad=1,_offset=0,noPrint=False):
 # approximate detection
 def approximateInput(inp,lst,index=False):
     for e in lst:
-        for i in range(len(e)):
+        for i in range(len(e)+1):
             if inp == e[:i].lower():
                 i = lst.index(e)
                 if index:
@@ -222,6 +243,42 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
     modeStr = ('' if mode == 'online' else f'({mode})')
 
     items = [name,f'v{vrs} {modeStr}','grades','recents','timetable','profiles','settings','update']
+
+    # sleep well lil guy
+    def wobbly():
+        from title_art import wobbly
+        small = wobbly[0]
+        big = wobbly[1]
+        speech = wobbly[2].split('\n')
+
+        for i in range(tWidth):
+            #i -= (1 if random.randint(0,10) == 10 else 0)
+            wobblyLines = (big if i % 2 == 0 else small).split('\n')
+            clr(f=1)
+            maxlen = max(len(l) for l in wobblyLines)
+            for wi,l in enumerate(wobblyLines):
+                l += (maxlen-len(l))*' '
+
+                inRange = (i < maxlen)
+                speak = (i == tWidth//2)
+                line = (min((i-maxlen),tWidth-maxlen)*' ' if not inRange else '')+(l[len(l)-i:] if inRange else l)+(speech[wi+1] if speak else '')
+                wobblyLines[wi] = line
+            wobbly = '\n'.join(wobblyLines)
+
+            print((((tHeight//2))-3)*'\n')
+            #print(random.randint(0,1)*'\n')
+            print(wobbly)
+            #print('\n\n-wobble wobble')
+            if speak:
+                time.sleep(2)
+            else:
+                time.sleep(random.randint(5,10)/100)
+        clr(f=1)
+        print(tWidth//2*'\n'+'   Goodnight lil fella...'+'\n'+'   Wobbly (Jun. 15-27, 2020)'+'\n')
+        if qInp():
+            pass
+
+        return False
 
     ## needs to be a function so we can easily refresh it
     def getTitleArt():
@@ -273,7 +330,7 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
         dbg('title called')
 
         titleLines = titleArt.split('\n')
-        cols = colors.copy()+colors.copy()
+        cols = colors[1:].copy()+colors[1:].copy()
         cols.reverse()
 
         tprint('\n\n\n\n')
@@ -282,25 +339,24 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
         
         npad = 1-(maxlen % 2)
         for l in titleLines:
-            tprint(' '+padded(color.bold+l+color.reset))
+            tprint(' '+padded(cmod['bold']+l+cmod['reset']))
 
         if len(titleLines) > 2:
-            tprint(round(tWidth/2)*' '+'|'+color.reset)
+            tprint(round(tWidth/2)*' '+'|'+cmod['reset'])
         else:
             tprint('')
         
         borderlen = maxlen-npad
-        dbg(str(maxlen),str(npad))
 
-        tprint(color.bold+' '+padded((borderlen)*'-'))
+        tprint(cmod['bold']+' '+padded((borderlen)*'-'))
         for i,s in enumerate(items):
-            c = (cols[int(i)] if i > 1 else '')
+            c = (cols[i] if i > 1 else '')
             i -= 1
             index = (str(i-1)+'. ' if i > 0 else '')
-            l = ' '+padded(printBetween(index+c+s,_len=borderlen+1,noPrint=True,_char=color.bold+'|'))
+            l = ' '+padded(printBetween(index+c+s,_len=borderlen+1,noPrint=True,_char=cmod['bold']+'|'))
             tprint(l)
 
-        tprint(' '+padded((borderlen)*'-')+color.reset)
+        tprint(' '+padded((borderlen)*'-')+cmod['reset'])
         padBottom()
 
     #sets choice
@@ -314,10 +370,15 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
         showTitle(localAnimTime=0)
 
     elif not handleInput(choice):
+        # refresh title art
         if choice == 'r':
             titleArt = getTitleArt()
             showTitle()
         
+        elif choice == 'wobbly':
+            wobbly()
+            showTitle()
+
         #unrecognized choice
         else:
             dbg(f'choice else: '+choice)
@@ -333,9 +394,9 @@ def showTimetable(_day=None,_lesson=None):
     from settings import ttdefault
 
     #def printBetween(s,pad=3):
-    #    start = borderIndex*' '+color.bold+'|'+color.reset
+    #    start = borderIndex*' '+cmod['bold']+'|'+cmod['reset']
     #    mid = pad*' '+s
-    #    end = (borderLen-len(clean_ansi(s))-pad-2)*' '+color.bold+'|'+color.reset
+    #    end = (borderLen-len(clean_ansi(s))-pad-2)*' '+cmod['bold']+'|'+cmod['reset']
     #    tprint(start+mid+end)
     
     ## get closest weekday to d
@@ -411,18 +472,20 @@ def showTimetable(_day=None,_lesson=None):
     # body lines
     lines = []
     for i,l in enumerate(timetable[day]):
+        for key in l.keys():
+            l[key] = str(l[key])
         isCurrent = (i == lesson)
-        index = color.bold+str(i)+'. '
-        subject = (color.one if isCurrent else '')+l['subject']
-        lines.append(index+subject+color.reset)
+        index = cmod['bold']+str(i)+'. '
+        subject = (colors[1] if isCurrent else '')+l['subject']
+        lines.append(index+subject+cmod['reset'])
         
         # "unfolds" currently selected lesson
         if isCurrent:
             pad = 3
-            startend = color.fade+l['start']+'-'+l['end']+color.reset
+            startend = colors[0]+l['start']+'-'+l['end']+cmod['reset']
             lines.append(pad*' '+startend)
             for v in ['teacher','classroom']:
-                line = pad*' '+color.fade+l[v]+color.reset
+                line = pad*' '+colors[0]+l[v]+cmod['reset']
                 lines.append(line)
     
     # top lines
@@ -436,25 +499,25 @@ def showTimetable(_day=None,_lesson=None):
     tprint('\n')
     tprint(border)
     tprint('\n')
-    tprint(color.bold+smolBorder+color.reset)    
+    tprint(cmod['bold']+smolBorder+cmod['reset'])    
     
     # body print
     for l in lines:
         printBetween(2*' '+l,_len=borderLen+1,_offset=borderIndex,_char='|\033[K')
    
     # hint bar
-    resetHint = underline('reset',0,color.one)
+    resetHint = underline('reset',0,colors[1])
     if ttdefault == 'l':
-        lessonHint = color.four+color.bold+'num: change lesson'+color.reset
-        dayHint = underline('d+num: change to day',14,color.three+color.bold)
+        lessonHint = colors[4]+cmod['bold']+'num: change lesson'+cmod['reset']
+        dayHint = underline('d+num: change to day',14,colors[3]+cmod['bold'])
     else:
-        dayHint = color.three+color.bold+'num: change to day'+color.reset
-        lessonHint = underline('l+num: change lesson',14,color.four+color.bold)
+        dayHint = colors[3]+cmod['bold']+'num: change to day'+cmod['reset']
+        lessonHint = underline('l+num: change lesson',14,colors[4]+cmod['bold'])
     
     #hints = '  '.join([locals()[v] for v in locals() if 'hint' in v.lower()])
     hints = [resetHint,lessonHint,dayHint]
     for i,h in enumerate(hints):
-        hints[i] = color.bold+'[ '+h+color.bold+' ]'+color.reset
+        hints[i] = cmod['bold']+'[ '+h+cmod['bold']+' ]'+cmod['reset']
 
 
     # constructing dayLegend
@@ -462,12 +525,12 @@ def showTimetable(_day=None,_lesson=None):
     for i,d in enumerate(daysOfWeek):
         d = d[0].lower()
         if i == day:
-            d = color.four+d
-        dayLegend += color.bold+d+color.reset
+            d = colors[4]+d
+        dayLegend += cmod['bold']+d+cmod['reset']
     dayLegend += '\033[K'
     
     # bottom print
-    tprint(color.bold+borderIndex*' '+(borderLen-len(clean_ansi(dayLegend)))*'-'+dayLegend+'\n\033[K\n\033[K')
+    tprint(cmod['bold']+borderIndex*' '+(borderLen-len(clean_ansi(dayLegend)))*'-'+dayLegend+'\n\033[K\n\033[K')
     #for h in sorted(hints,key=lambda x: len(clean_ansi(x))):
     #    tprint(padded(h))
     tprint(spaceHint(sorted(hints,key=lambda x: len(clean_ansi(x))))+'\n\033[K')
@@ -560,12 +623,12 @@ def showGrades(noInp=False,inp=None):
         ###string assignment/formatting
         #assigning the needed arrays
         simGrades = ([int(g) for g in [clean_ansi(v) for v in _grades]] if '_grades' in locals() else [])
-        actGrades = [(color.bold if v['weight'] == '200%' else '')+str(v['value']) for v in allGrades]
+        actGrades = [(cmod['bold'] if v['weight'] == '200%' else '')+str(v['value']) for v in allGrades]
         
         dbg(f'sim,act: {str(simGrades)},{actGrades}')
 
         #colors, formats grade strings
-        actGradesColored = ",".join([f'{colors[int(clean_ansi(g))-1]}{g}{color.reset}' for g in actGrades])
+        actGradesColored = ",".join([f'{colors[int(clean_ansi(g))]}{g}{cmod["reset"]}' for g in actGrades])
 
         #avg calculations and formatting
         allGradesInt = []
@@ -574,19 +637,19 @@ def showGrades(noInp=False,inp=None):
                 allGradesInt.append(v['value'])
         
         avg = ( sum(allGradesInt+simGrades)/len(allGradesInt+simGrades) if len(allGradesInt+simGrades) > 0 else 0)
-        avgValue = f'{colors[int(avg-1)]}{color.bold}{avg}{color.reset}'
+        avgValue = f'{colors[int(avg)]}{cmod["bold"]}{avg}{cmod["reset"]}'
 
         #assigning formatted strings
-        avgStr = color.bold+(f'Current average: ' if simGrades == [] else 'Simulated average: ')+color.reset + avgValue
-        subStr = f'{color.bold}{sub}{color.reset}: '
+        avgStr = cmod['bold']+(f'Current average: ' if simGrades == [] else 'Simulated average: ')+cmod['reset'] + avgValue
+        subStr = f'{cmod["bold"]}{sub}{cmod["reset"]}: '
         actual = f'{actGradesColored}' 
-        simulated = (f',{",".join([color.italic+color.fade+str(a) for a in simGrades])}{color.reset}' if len(simGrades) > 0 else '')
+        simulated = (f',{",".join([cmod["italic"]+colors[0]+str(a) for a in simGrades])}{cmod["reset"]}' if len(simGrades) > 0 else '')
         hints = ['num to add','-num to remove']
-        cols = [color.four,color.one]
+        cols = [colors[4],colors[1]]
         hint = '  '.join([makeHint(s,cols[i],noUnderline=True) for i,s in enumerate(hints)])
 
         #formatting grades with line breaking
-        _line = f'{color.bold}Grades:{color.reset} '+actual+simulated
+        _line = f'{cmod["bold"]}Grades:{cmod["reset"]} '+actual+simulated
         _sep = ','
         _padLen = len(f'Grades: ')
         _len = tWidth-5
@@ -606,7 +669,7 @@ def showGrades(noInp=False,inp=None):
         #body (counts of values)
         for v in [1,2,3,4,5]:
             cnt = simGrades.count(v)
-            valstr = f' {v}s: {color.bold}{colors[v-1]}{cnt}{color.reset}'
+            valstr = f' {v}s: {cmod["bold"]}{colors[v-1]}{cnt}{cmod["reset"]}'
             #if the count is more than 0 it prints
             if not cnt == 0: 
                 printBetween(valstr)
@@ -702,21 +765,22 @@ def showGrades(noInp=False,inp=None):
         for v in [v for v in reversed(marks) if v['subject'] == choice and v['type'] == 'MidYear']:   
             #value
             if isinstance(v['value'],str):
-                value = f'{color.italic}text{color.reset}'
+                value = f'{cmod["italic"]}text{cmod["reset"]}'
             else:
-                value = f'{color.bold}{colors[v["value"]-1]}{v["value"]}{color.reset}'
+                value = f'{cmod["bold"]}{colors[v["value"]-1]}{v["value"]}{cmod["reset"]}'
 
             #weight
             weight = v['weight']
 
             #theme
-            theme = f'{color.italic}{v["theme"]}{color.reset}'
+            theme = f'{v["theme"]}{cmod["reset"]}'
+            #theme = f'{cmod["italic"]}{v["theme"]}{cmod["reset"]}'
 
             #date
-            date = f'{color.fade}{v["date"]}{color.reset}'
+            date = f'{colors[0]}{v["date"]}{cmod["reset"]}'
 
             #time
-            _time = f'{color.fade}{color.italic}{v["time"]}{color.reset}'
+            _time = f'{colors[0]}{cmod["italic"]}{v["time"]}{cmod["reset"]}'
             
             #add to lines
             lines.append(f'{date} ~ {value}*{weight}: {theme}')
@@ -726,11 +790,11 @@ def showGrades(noInp=False,inp=None):
         #going through lines, finding if any are longer than the terminal-1 and reassigning them with linebroken versions
                 #length of longest line
         _length = max(len(clean_ansi(l)) for l in lines)
-        col = colors[int(getAvg(choice))-1]
-        _avg = col+getAvg(choice,_ret='str')+color.reset #avg value
+        col = colors[int(getAvg(choice))]
+        _avg = col+getAvg(choice,_ret='str')+cmod['reset'] #avg value
         
         #top border
-        tprint('\n'+padded(color.bold+f' {choice}: {_avg}'+color.reset)+'\n'+border)
+        tprint('\n'+padded(cmod['bold']+f' {choice}: {_avg}'+cmod['reset'])+'\n'+border)
             
         for li,l in enumerate(lines):
             cl = breakLine(l,len(clean_ansi(f'{lines[li].split(":")[0]}  ')),tWidth-5,' ',)
@@ -742,7 +806,7 @@ def showGrades(noInp=False,inp=None):
 
         #bottom border
         tprint(border)
-        tprint('\n'+padded(makeHint('simulate',color.four)))
+        tprint('\n'+padded(makeHint('simulate',colors[4])))
         padBottom()
         
         #exit
@@ -784,18 +848,18 @@ def showGrades(noInp=False,inp=None):
                 if not index == None:
                     grades.append(term[index]['value'])
                 else:
-                    grades.append(color.reset+'.')
+                    grades.append(cmod['reset']+'.')
 
             return grades
 
         def getHalf():
             mode = 'half'
-            halfyears = [m for m in marks if m['type'] == 'HalfYear']
+            halfyears = [m for m in marks if m['type'] == 'felevi_jegy_ertekeles']
             return getTerm(halfyears)
             
         def getEnd():
             mode = 'end'
-            endyears = [m for m in marks if m['type'] == 'EndYear']
+            endyears = [m for m in marks if m['type'] == 'evvegi_jegy_ertekeles']
             return getTerm(endyears)
             
         def getDifference():
@@ -804,15 +868,15 @@ def showGrades(noInp=False,inp=None):
             current = (getEnd() if len(getEnd()) > 0 else avgs)
             for (o,n) in zip(getHalf(),current):
                 if n == o:
-                    s = colors[o-1]+str(n)+color.reset+' '
+                    s = colors[o-1]+str(n)+cmod['reset']+' '
                     diff.append(s)
                     continue
 
                 cols = []
                 for c in (o,n):
-                    cols.append(color.one if isinstance(c,str) else colors[c-1])
-                gradestr = [color.reset+(color.fade if n == o else cols[i])+str(c) for i,c in enumerate([o,n])]
-                s = '->'.join([g+color.reset for g in gradestr])
+                    cols.append(colors[1] if isinstance(c,str) else colors[c-1])
+                gradestr = [cmod['reset']+(colors[0] if n == o else cols[i])+str(c) for i,c in enumerate([o,n])]
+                s = '->'.join([g+cmod['reset'] for g in gradestr])
                 diff.append(s)
             
             #maxlen = max(len(clean_ansi(d.split('->')[-1])) for d in diff)
@@ -849,25 +913,25 @@ def showGrades(noInp=False,inp=None):
         try:
             filtered = [g for g in grades if isinstance(g,int)]
             avg = round(sum(filtered)/len(filtered),4)
-            avgstr = colors[round(avg)-1]+str(avg)+color.reset
+            avgstr = colors[round(avg)-1]+str(avg)+cmod['reset']
         except (TypeError,ZeroDivisionError) as e:
             if mode in ['difference','edit']:
                 avgstr = ''
             else:
                 dbg(str(e))
-                avgstr = color.one+'TBA'+color.reset
+                avgstr = colors[1]+'TBA'+cmod['reset']
 
         clr()
         borderLen = longest+12
         
         # get hint array, color and color, print them
         hints = ['half term','current','end of term','difference','ed-it']
-        col = [(color.four if mode in h.replace('-','') else color.one) for h in hints]
+        col = [(colors[4] if mode in h.replace('-','') else colors[1]) for h in hints]
         hint = spaceHint([makeHint(h,col=c) for h,c in zip(hints,col)])
         title = 'overall'
-        subBorder = color.bold+title
+        subBorder = cmod['bold']+title
         tprint('\n\n')
-        tprint(padded(subBorder+(borderLen-len(clean_ansi(subBorder+avgstr))-1)*'-'+avgstr)+color.reset)
+        tprint(padded(subBorder+(borderLen-len(clean_ansi(subBorder+avgstr))-1)*'-'+avgstr)+cmod['reset'])
         
         # print all the lines
         for i,(sub,gra) in enumerate(zip(subjects,grades)):
@@ -875,7 +939,7 @@ def showGrades(noInp=False,inp=None):
             if mode == 'difference': 
                 col = ''
             else:
-                col = (colors[gra-1] if isinstance(gra,int) else color.one)
+                col = (colors[gra-1] if isinstance(gra,int) else colors[1])
             
             # shorten string values
             if isinstance(gra,str) and len(clean_ansi(gra.strip())) > 3:
@@ -885,7 +949,7 @@ def showGrades(noInp=False,inp=None):
                 else:
                     val = gra[:4]+'..'
             else:
-                val = str(gra)+color.reset
+                val = str(gra)+cmod['reset']
             
             # if editing show indexes
             if mode == 'edit': 
@@ -898,10 +962,10 @@ def showGrades(noInp=False,inp=None):
             line = index+subject+': '
             pad = (borderLen-len(clean_ansi(line+value))-5)*' '
             line = line+pad+value+' '
-            tprint(padded(printBetween(line,_len=borderLen,noPrint=True,_char=color.bold+'|'+color.reset)))
+            tprint(padded(printBetween(line,_len=borderLen,noPrint=True,_char=cmod['bold']+'|'+cmod['reset'])))
 
         # print bottom border
-        tprint(padded(color.bold+((borderLen-1)*'-'))+color.reset+'\n')
+        tprint(padded(cmod['bold']+((borderLen-1)*'-'))+cmod['reset']+'\n')
         
         # print hints
         for h in hint.split('\n'):
@@ -918,8 +982,8 @@ def showGrades(noInp=False,inp=None):
                 sub = subjects[int(choice)]
                 old = grades[int(choice)]
                 clr(f=1)
-                new = input('\n\n'+color.bold+sub+': '+colors[old-1]+str(old)+color.reset+color.bold+' -> '+color.four)
-                tprint(color.reset)
+                new = input('\n\n'+cmod['bold']+sub+': '+colors[old-1]+str(old)+cmod['reset']+cmod['bold']+' -> '+colors[4])
+                tprint(cmod['reset'])
                 clr(f=1)
                 if new.isdigit() and int(new) in range(1,6):
                     grades[int(choice)] = int(new)
@@ -989,7 +1053,7 @@ def showGrades(noInp=False,inp=None):
         #colorful return value
         if _ret == 'str':
             if cm == 'colored':
-                _avgStr = color.bold + colors[round(_avgFloat)-1] + str(_avgFloat) + _pad + color.reset
+                _avgStr = cmod['bold'] + colors[round(_avgFloat)-1] + str(_avgFloat) + _pad + cmod['reset']
             else:
                 _avgStr = str(_avgFloat) + _pad
 
@@ -1033,8 +1097,14 @@ def showGrades(noInp=False,inp=None):
     dbg(f'SubJlist contains {len(subjectsList)} elements.')
     
     #top border
-    tprint('\n\n\n'+color.bold+'asztal'.center(tWidth-3)+color.reset)
+    tprint('\n\n\n'+cmod['bold']+'asztal'.center(tWidth-3)+cmod['reset'])
     tprint(border)
+
+    if not len(subjectsList):
+        tprint((tHeight//2-printedLines)*'\n'+cmod['bold']+'No grades available.'.center(tWidth)+cmod['reset'])
+        padBottom()
+        tprint('\033[3A'+border+'\033[3B')
+        return
      
     #gets the longest subject name
     for sub in subjectsList:
@@ -1075,22 +1145,22 @@ def showGrades(noInp=False,inp=None):
 
             value = v['value']
             if gradeStyle == 'colored':
-                value = colors[int(value)-1]+str(value)+color.reset                    
+                value = colors[int(value)]+str(value)+cmod['reset']                    
 
           
             weight = v['weight']
             if weightStyle == 'weighted':
                 if weight == '200%':
-                    valStr = color.bold+str(value)+color.reset+' '
+                    valStr = cmod['bold']+str(value)+cmod['reset']+' '
                 else:
                     valStr = str(value)+' '
 
             else:
                 if weightStyle == 'faded':
                     if weight == '200%':
-                        valStr = f'{value}*{color.fade}{color.bold}{weight}{color.reset} '
+                        valStr = f'{value}*{colors[0]}{cmod["bold"]}{weight}{cmod["reset"]} '
                     else:
-                        valStr = f'{value}*{color.fade}{weight}{color.reset} '
+                        valStr = f'{value}*{colors[0]}{weight}{cmod["reset"]} '
                 else:
                     valStr = f'{value}*{weight} '
 
@@ -1112,9 +1182,9 @@ def showGrades(noInp=False,inp=None):
     tprint(border)
     
     hints = [
-                makeHint('num/name for info',color.four,noUnderline=True),
-                makeHint('num+s+[..] for simulate',color.three,noUnderline=True),
-                makeHint('overall menu',color.one)
+                makeHint('num/name for info',colors[4],noUnderline=True),
+                makeHint('num+s+[..] for simulate',colors[3],noUnderline=True),
+                makeHint('overall menu',colors[1])
             ]
     tprint()
     
@@ -1144,16 +1214,40 @@ def showGrades(noInp=False,inp=None):
 
 #recents display function
 def showRecents(): 
+    if not len(marks):
+        tprint('\n\n\n\n'+border+padded('|'))
+        """
+        tprint((tHeight//2-printedLines)*'\n'+cmod['bold']+'No grades to iterate over.'.center(tWidth)+cmod['reset'])
+        padBottom()
+        tprint(border)
+        """
+        l = "No grades available."
+        # -----
+        tprint(padded((len(l)+4)*"-"))
+        # |   |
+        tprint(padded(printBetween('',_len=len(l)+5,noPrint=1)))
+        # |...|
+        tprint(padded(printBetween(l,_len=len(l)+5,noPrint=1)))
+        # |   |
+        tprint(padded(printBetween('',_len=len(l)+5,noPrint=1)))
+        # -----
+        tprint(padded((len(l)+4)*"-"))
+        padBottom()
+        tprint('\033[3A'+border+'\033[3B')
+
+
+        return
+
     for i,mark in enumerate(marks):
         lines = []
 
         index = str(i)
-        subject = color.bold+color.three+mark["subject"]+color.reset+':'
+        subject = cmod['bold']+colors[3]+mark["subject"]+cmod['reset']+':'
         theme = (mark['theme'] if not mark['theme'] == '' else 'None')
-        value = (f'{color.bold}{colors[mark["value"]-1]}{mark["value"]}{color.reset}' if isinstance(mark["value"],int) else mark["value"]) 
-        weight = (f'*{mark["weight"]}{color.reset}' if not mark["weight"] == 'None' else '')
+        value = (f'{cmod["bold"]}{colors[mark["value"]-1]}{mark["value"]}{cmod["reset"]}' if isinstance(mark["value"],int) else mark["value"]) 
+        weight = (f'*{mark["weight"]}{cmod["reset"]}' if not mark["weight"] == 'None' else '')
         valweight = (value if '-' in weight else value+weight)
-        _datetime = f'{color.fade}{mark["date"]} {mark["time"]}{color.reset}'
+        _datetime = f'{colors[0]}{mark["date"]} {mark["time"]}{cmod["reset"]}'
         datetime = _datetime
 
         for e in [subject,theme,valweight,datetime]:
@@ -1224,11 +1318,11 @@ def showSettings():
     def invalidChoice():
         dbg('unrecognized choice')
         clr()
-        text = '| '+color.bold+'Invalid choice for '+color.one+name+color.reset+'.'+' |'
+        text = '| '+cmod['bold']+'Invalid choice for '+colors[1]+name+cmod['reset']+'.'+' |'
         tprint('\n\n'+border+'\n')
-        tprint(color.bold+((len(clean_ansi(text)))*'-').center(tWidth)+color.reset)
+        tprint(cmod['bold']+((len(clean_ansi(text)))*'-').center(tWidth)+cmod['reset'])
         tprint(padded(text))
-        tprint(color.bold+((len(clean_ansi(text)))*'-').center(tWidth)+color.reset+'\n')
+        tprint(cmod['bold']+((len(clean_ansi(text)))*'-').center(tWidth)+cmod['reset']+'\n')
 
         tprint('\n\n\n\n\n\n\n\n\n'+border) 
 
@@ -1284,21 +1378,18 @@ def showSettings():
 
     ## main menu
     tprint('\n\n'+border+'\n\n')
-    #maxlen = max(len(n) for n in names) + max(len(o) for o in options)+20
-    #borderLen = max(32,maxlen)
     borderLen = 35
-    #dbg(str(borderLen)+' '+str(maxlen))
-    menuBorder = color.bold+('settings'+(borderLen-len('settings'))*'-').center(tWidth)+color.reset
+    menuBorder = cmod['bold']+('settings'+(borderLen-len('settings'))*'-').center(tWidth)+cmod['reset']
     menuBorderIndex = clean_ansi(menuBorder).index('s')
     padding = menuBorderIndex*' '+'| '
 
-    hint = padded(makeHint('preview grades menu',color.four)+color.reset)
+    hint = padded(makeHint('preview grades menu',colors[4])+cmod['reset'])
 
     tprint(menuBorder)
     lines = []
     for i,n in enumerate(names):
         if len(options[i]) in range(3):
-            formatting = [color.four,color.one]
+            formatting = [colors[4],colors[1]]
         else:
             formatting = colors.copy()
         
@@ -1313,13 +1404,13 @@ def showSettings():
                 continue
             selected = formatting[selIndex]+options[i][selIndex]
      
-        left = padding+f'{color.bold}{i}. {n}:' 
+        left = padding+f'{cmod["bold"]}{i}. {n}:' 
 
         midPadding = menuBorderIndex+borderLen-len(clean_ansi(left))-len(clean_ansi(selected))-2
-        right = midPadding*' '+f'{selected}{color.reset}'+' |'
+        right = midPadding*' '+f'{selected}{cmod["reset"]}'+' |'
         tprint(left+right)
     
-    tprint(color.bold+(borderLen*'-').center(tWidth)+color.reset+'\n')
+    tprint(cmod['bold']+(borderLen*'-').center(tWidth)+cmod['reset']+'\n')
     tprint(hint)
     tprint('\n\n'+border)
     padBottom()
@@ -1367,7 +1458,7 @@ def showSettings():
     tprint('\n\n'+border+'\n\n')
     inputType = ('input' in options[nameIndex])
     subBorderLen = (len(comments[nameIndex])+10 if inputType else borderLen)
-    subMenuBorder = color.bold+(name+(subBorderLen-len(name))*'-').center(tWidth)+color.reset
+    subMenuBorder = cmod['bold']+(name+(subBorderLen-len(name))*'-').center(tWidth)+cmod['reset']
     lilPaddyVert,downPadding = divmod(len(options)-len(options[nameIndex]),2)
     menuBorderIndex = clean_ansi(subMenuBorder).index(name[0])
     padding = menuBorderIndex*' '+'| '
@@ -1384,24 +1475,24 @@ def showSettings():
             index = ''
             downPadding += 6
         elif len(options[nameIndex]) in range(3):
-            formatting = [color.four,color.one]
-            index = color.reset+color.bold+str(i)+color.reset+'. '
+            formatting = [colors[4],colors[1]]
+            index = cmod['reset']+cmod['bold']+str(i)+cmod['reset']+'. '
         else:
             formatting = colors.copy()
-            index = color.reset+color.bold+str(i)+color.reset+'. '
+            index = cmod['reset']+cmod['bold']+str(i)+cmod['reset']+'. '
         
        
 
         paddingMid = 2*' '
-        left = paddingMid+index+color.bold
+        left = paddingMid+index+cmod['bold']
         
         paddingEnd = (subBorderLen-len(clean_ansi(left+o))-3)*' '
-        tprint(padding+left+formatting[i]+o+color.reset+paddingEnd+'|')
+        tprint(padding+left+formatting[i]+o+cmod['reset']+paddingEnd+'|')
     
     if not inputType:
         for _ in range(lilPaddyVert): tprint(padding+(subBorderLen-3)*' '+'|')
     
-    tprint(color.bold+((subBorderLen)*'-').center(tWidth)+color.reset+'\n')
+    tprint(cmod['bold']+((subBorderLen)*'-').center(tWidth)+cmod['reset']+'\n')
     
     tprint('\n\n\n'+downPadding*'\n'+border+'\n')
     padBottom()
@@ -1409,6 +1500,7 @@ def showSettings():
     choice = qInp('')
     if choice == '':
         writeSettings()
+        globals()['colors'] = getColors()
         showSettings()
     
     for o in options[nameIndex]:
@@ -1458,7 +1550,7 @@ def showProfiles():
     from usercfg import users
     dbg(f'users: {len(users)}')
     optRaw = ['new','switch','edit','default','remove']
-    clrs = [color.five,color.four,color.three,color.two,color.one]
+    clrs = [colors[5],colors[4],colors[3],colors[2],colors[1]]
 
     options = [makeHint(s,clrs[i]) for i,s in enumerate(optRaw)]
     
@@ -1499,7 +1591,7 @@ def showProfiles():
         except: pass
         from marks import usr as oldUsr
 
-        tprint('\n\n'+border+'\n\n\n'+padded(color.bold+'Choose profile to switch to:\n\n'+color.reset))
+        tprint('\n\n'+border+'\n\n\n'+padded(cmod['bold']+'Choose profile to switch to:\n\n'+cmod['reset']))
         choice = listUsers(border='\n\n\n'+border,showDefault=False,old=oldUsr)
         padBottom()
         if choice == None:
@@ -1511,7 +1603,7 @@ def showProfiles():
     #edit user
     elif inp == 'e':
         clr()
-        tprint('\n\n'+border+'\n\n\n'+padded(color.bold+'Choose profile to edit:\n\n'+color.reset))
+        tprint('\n\n'+border+'\n\n\n'+padded(cmod['bold']+'Choose profile to edit:\n\n'+cmod['reset']))
         user = listUsers(border='\n\n'+border+'\n')
         padBottom()
     
@@ -1531,7 +1623,7 @@ def showProfiles():
     elif inp == 'r':
         clr()
 
-        tprint('\n\n'+border+'\n\n\n'+padded(color.bold+'Choose profile to delete:\n\n'+color.reset))
+        tprint('\n\n'+border+'\n\n\n'+padded(cmod['bold']+'Choose profile to delete:\n\n'+cmod['reset']))
 
         choice = listUsers(border='\n\n'+border)
         if choice == None:
@@ -1543,10 +1635,10 @@ def showProfiles():
         name = (choice['name'] if prettyUser == 'True' and 'name' in choice.keys() else choice['usr'])
         
         
-        print(padded(color.bold+int(tWidth/2)*'-'+color.reset))
-        print(color.bold+padded(printBetween('Are you sure you want to delete '+color.one+name+color.reset+color.bold+'? Y[n]',_len=int(tWidth/2),noPrint=True))+color.reset)
-        print(padded(color.bold+int(tWidth/2)*'-'+color.reset))
-        #print(padded(f'Are you sure you want to delete {color.one}{name}{color.reset}{color.bold}? Y[n] '+color.reset)+'\n\n\n\n\n\n'+border+'\n')
+        print(padded(cmod['bold']+int(tWidth/2)*'-'+cmod['reset']))
+        print(cmod['bold']+padded(printBetween('Are you sure you want to delete '+colors[1]+name+cmod['reset']+cmod['bold']+'? Y[n]',_len=int(tWidth/2),noPrint=True))+cmod['reset'])
+        print(padded(cmod['bold']+int(tWidth/2)*'-'+cmod['reset']))
+        #print(padded(f'Are you sure you want to delete {colors[1]}{name}{cmod['reset']}{cmod['bold']}? Y[n] '+cmod['reset'])+'\n\n\n\n\n\n'+border+'\n')
         padBottom()
         if qInp('').lower() == 'y':
             shutil.copyfile(os.path.join(curdir,'usercfg.py'),'usercfg_backup')
@@ -1570,7 +1662,7 @@ def showProfiles():
         clr()
 
         # get input
-        tprint('\n\n'+border+'\n\n\n'+padded(color.bold+'Set profile to default:\n\n'+color.reset))
+        tprint('\n\n'+border+'\n\n\n'+padded(cmod['bold']+'Set profile to default:\n\n'+cmod['reset']))
 
         choice = listUsers(border='\n\n'+border)
         if choice == None:
@@ -1613,17 +1705,17 @@ def showUpdate():
 
     changelog = '\n'.join(changelog)
     if newVersion > vrs:
-        tprint(color.bold+('New version '+str(newVersion)+' available!').center(tWidth)+'\n\n'+'Changelog:'.center(tWidth)+color.reset)
+        tprint(cmod['bold']+('New version '+str(newVersion)+' available!').center(tWidth)+'\n\n'+'Changelog:'.center(tWidth)+cmod['reset'])
     else:
-        tprint(color.bold+'No new version available.'.center(tWidth)+'\n\n'+'Current changelog:'.center(tWidth)+color.reset)
+        tprint(cmod['bold']+'No new version available.'.center(tWidth)+'\n\n'+'Current changelog:'.center(tWidth)+cmod['reset'])
 
-    tprint(color.fade+linePad+str(newVersion)+':')
+    tprint(colors[0]+linePad+str(newVersion)+':')
     for l in changelog.split('\n'):
         tprint(l)
-    tprint(color.reset)
+    tprint(cmod['reset'])
 
-    updateHint = makeHint('update now',color.four)
-    forceHint = makeHint('force update',color.four)
+    updateHint = makeHint('update now',colors[4])
+    forceHint = makeHint('force update',colors[4])
 
     if newVersion > vrs:
         hint = updateHint
@@ -1632,7 +1724,7 @@ def showUpdate():
         hint = forceHint
         conf = 'f'
 
-    tprint(padded(hint)+color.reset)
+    tprint(padded(hint)+cmod['reset'])
     tprint('\n'+border)
     padBottom()
     inp = qInp('').lower()
@@ -1651,7 +1743,6 @@ def showUpdate():
 
 #==========================profile functions===========================
 # these need to be outside of showProfiles so that asztal.py has access
-# this would be fixed by OOP but i dont have the time or energy rn
 
 ##switch user
 def switchUser(user):
@@ -1738,7 +1829,7 @@ def createUser():
 
 ##list users to choose from
 def listUsers(users=None,noInp=False,noIndex=False,showDefault=True,border=None,old=None):
-    from ui import color,clean_ansi
+    #from ui import color,clean_ansi
     from settings import prettyUser
 
 
@@ -1748,11 +1839,11 @@ def listUsers(users=None,noInp=False,noIndex=False,showDefault=True,border=None,
 
     # border
     borderLen = 32+(0 if noIndex else 2)
-    borderSmol = color.bold+f"{borderLen*'-'}".center(tWidth)+color.reset
+    borderSmol = cmod['bold']+f"{borderLen*'-'}".center(tWidth)+cmod['reset']
     tprint(borderSmol)
     
     for i,user in enumerate(users):
-        default = (color.two+'*'+color.reset if showDefault and user['isDefault'] == 'True' else ' ')
+        default = (colors[2]+'*'+cmod['reset'] if showDefault and user['isDefault'] == 'True' else ' ')
         current = user['usr']
 
         # get start of borderSmol to base center upon
@@ -1767,9 +1858,9 @@ def listUsers(users=None,noInp=False,noIndex=False,showDefault=True,border=None,
         ## index
         # grey out current account to avoid confusion
         if current == old:
-            index = f'|{color.fade} '
+            index = f'|{colors[0]} '
         else:
-            index = color.bold+'| '+color.reset
+            index = cmod['bold']+'| '+cmod['reset']
         
         #with index number
         if not noIndex:
@@ -1781,14 +1872,14 @@ def listUsers(users=None,noInp=False,noIndex=False,showDefault=True,border=None,
         # if we can display the user and we also want to
         if 'name' in user.keys() and prettyUser == 'True':
             #mid = name
-            mid = ('' if color.fade in index else color.bold)+int(borderLen/15)*' '+user['name']+color.reset
+            mid = ('' if colors[0] in index else cmod['bold'])+int(borderLen/15)*' '+user['name']+cmod['reset']
  
         else:
             #mid = user_info
-            if color.fade in index:
-                mid = (int(borderLen/15)-1)*' '+user['usr'] + ' @ ' + user['ist'] + color.reset
+            if colors[0] in index:
+                mid = (int(borderLen/15)-1)*' '+user['usr'] + ' @ ' + user['ist'] + cmod['reset']
             else:
-                mid = color.four+color.bold+(int(borderLen/15)-1)*' '+user['usr']+color.reset + color.bold+ ' @ ' + color.one+user['ist']+color.reset
+                mid = colors[4]+cmod['bold']+(int(borderLen/15)-1)*' '+user['usr']+cmod['reset'] + cmod['bold']+ ' @ ' + colors[1]+user['ist']+cmod['reset']
 
  
         ## end
@@ -1797,11 +1888,11 @@ def listUsers(users=None,noInp=False,noIndex=False,showDefault=True,border=None,
         if showDefault:
             end += default
         end = ' '*(borderLen-(len(clean_ansi(index+mid+end+default)))-1)+end
-        end += color.bold+' |'+color.reset
+        end += cmod['bold']+' |'+cmod['reset']
         
         tprint(paddingLeft+index+mid+end)
     
-    
+ 
     tprint(borderSmol)
     
     if not border == None:
@@ -1835,7 +1926,7 @@ def editUser(user):
     for key,value in user.items():
         if not key in ['usr','pwd','ist']:
             continue
-        newValue = input(padded(color.bold+color.four+value+color.reset+color.bold+': '+color.reset))
+        newValue = input(padded(cmod['bold']+colors[4]+value+cmod['reset']+cmod['bold']+': '+cmod['reset']))
         if newValue == '':
             newValue = value
         user[key] = newValue 
@@ -1845,7 +1936,7 @@ def editUser(user):
         f.write('users = '+json.dumps(users,indent=4))
     clr(f=1)
     return user['usr'],user['pwd'],user['ist']
-    #print(color.bold+((borderLen-len(clean_ansi(dayLegend)))*'-'+dayLegend).center(tWidth)+color.reset)
+    #print(cmod['bold']+((borderLen-len(clean_ansi(dayLegend)))*'-'+dayLegend).center(tWidth)+cmod['reset'])
 
 #====================================================================
 
@@ -1919,7 +2010,6 @@ def start(_mode='online',_debug=0,shortcut=None):
         
     with open(os.path.join(curdir,'usercfg.py'),'wb') as f:
         f.write(b'users = '+json.dumps(users,ensure_ascii=False,indent=4).encode('utf-8'))
- 
 
     #tprint('\n\n\nUI:')
     showTitle(shortcut,bday)

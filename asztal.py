@@ -44,7 +44,16 @@ except Exception as e:
 
 #get version number
 try:
-    vrs = float(subprocess.Popen(['cat' ,os.path.join(curdir,'changelog')],stdout=subprocess.PIPE).communicate()[0].decode('utf-8').split('\n')[0].replace(':',''))
+    vrs = float(
+            subprocess.Popen(
+                ['cat' ,os.path.join(curdir,'changelog')],
+                stdout=subprocess.PIPE
+            )
+            .communicate()[0]
+            .decode('utf-8')
+            .split('\n')[0]
+            .replace(':','')
+    )
 except:
     vrs = 0.0
 

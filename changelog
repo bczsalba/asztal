@@ -1,3 +1,4 @@
-1.02:
-- fixed asztal not looking in the right directory for settings
-- adjusted default animTime
+1.1:
+- updated to Kreta api v2 (https://github.com/bczsalba/ekreta-docs-v2)
+- fixed some issues from no grades available
+- fixed a bug with approximate input 

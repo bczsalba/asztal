@@ -1,7 +1,8 @@
 ## roadmap
+###1.3:	
+- properly structured asztal/ dir
 
 ## yes
-- add gifs to all menus in README.md
 - add padding to both sides in grades
 
 ## maybe
@@ -15,4 +16,3 @@
 ## changelog
 
 ## bugs
-- "grade" works but grades dont haha
