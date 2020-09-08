@@ -1790,7 +1790,7 @@ def createUser():
     tprint('\n\n')
     
     ##trying to import usercfg
-    if 'usercfg.py' in os.listdir(os.path.dirname(__file__),'storage'):
+    if 'usercfg.py' in os.listdir(os.path.join(os.path.dirname(__file__),'storage')):
         try:
             sys.path.insert(0,os.path.dirname(__file__))
             from usercfg import users
