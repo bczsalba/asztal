@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 #imports
-import os
-import shutil
+import os,shutil
 import sys
 import re
 import json
@@ -30,11 +29,12 @@ from settings import *
 daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday']
 cursorUp = '\033[1A'
 silence = '\033[1A'+'\033[K'
+customColors = 'True'
 
 #color
 def getColors():
     c = {}
-    if customColors == 'True' and 'colors.py' in os.listdir(curdir):
+    if customColors == 'True' and 'colors.py' in os.listdir(curdir+'/storage'):
         import colors as cols
         for name,value in zip(['one','two','three','four','five'],cols.colors):
             c[name] = f'\033[38;5;{value}m'
@@ -393,26 +393,22 @@ def showTimetable(_day=None,_lesson=None):
     import datetime
     from settings import ttdefault
 
-    #def printBetween(s,pad=3):
-    #    start = borderIndex*' '+cmod['bold']+'|'+cmod['reset']
-    #    mid = pad*' '+s
-    #    end = (borderLen-len(clean_ansi(s))-pad-2)*' '+cmod['bold']+'|'+cmod['reset']
-    #    tprint(start+mid+end)
-    
     ## get closest weekday to d
     def getClosestDay(d=None):
         '''0:monday, 6: sunday'''
+        dbg('getClosestDay:',d,len(timetable))
+        dbg(timetable)
 
         results = []
-        for day in range(len(timetable)):
+        for day in range(5):
             temp = abs(d-day)
             results.append(temp)
 
         if results == []:
             return 0
 
+        dbg(results.index(min(results)))
         return results.index(min(results))
-
 
     # detect if recalled by itself
     handleRecall()
@@ -458,35 +454,39 @@ def showTimetable(_day=None,_lesson=None):
             lesson = 0
         else:
             for i,l in enumerate(timetable[day]):
-                #dbg(l)
-                start = datetime.datetime.combine(datetime.datetime.today(),datetime.datetime.strptime(l['start'],'%H:%M:%S').time())
+                start = datetime.datetime.combine(datetime.datetime.today(),datetime.datetime.strptime(l['start'],'%H:%M').time())
                 tempTime = current-start
                 if not 'minTime' in locals() or (datetime.timedelta(0) < tempTime < minTime):
                     minTime = tempTime
                     lesson = i
 
+    lines = []
     if len(timetable[day]) == 0:
         dbg('no timetable for this day')
+        line = 'Looks like your day is empty!'
+
+        lines = ['',cmod['bold']+line+cmod['reset'],'']
 
     ## printing
     # body lines
-    lines = []
     for i,l in enumerate(timetable[day]):
         for key in l.keys():
             l[key] = str(l[key])
         isCurrent = (i == lesson)
         index = cmod['bold']+str(i)+'. '
         subject = (colors[1] if isCurrent else '')+l['subject']
-        lines.append(index+subject+cmod['reset'])
         
         # "unfolds" currently selected lesson
         if isCurrent:
+            classroom = cmod['reset']+cmod['bold']+' / '+l['classroom']+cmod['reset']
+            lines.append(index+subject+classroom+cmod['reset'])
             pad = 3
             startend = colors[0]+l['start']+'-'+l['end']+cmod['reset']
             lines.append(pad*' '+startend)
-            for v in ['teacher','classroom']:
-                line = pad*' '+colors[0]+l[v]+cmod['reset']
-                lines.append(line)
+            line = pad*' '+colors[0]+l['teacher']+cmod['reset']
+            lines.append(line)
+        else:
+            lines.append(index+subject+cmod['reset'])
     
     # top lines
     maxlen = max([len(clean_ansi(l)) for l in lines])
@@ -509,12 +509,11 @@ def showTimetable(_day=None,_lesson=None):
     resetHint = underline('reset',0,colors[1])
     if ttdefault == 'l':
         lessonHint = colors[4]+cmod['bold']+'num: change lesson'+cmod['reset']
-        dayHint = underline('d+num: change to day',14,colors[3]+cmod['bold'])
+        dayHint = underline('d+num: change to day',17,colors[3]+cmod['bold'])
     else:
         dayHint = colors[3]+cmod['bold']+'num: change to day'+cmod['reset']
-        lessonHint = underline('l+num: change lesson',14,colors[4]+cmod['bold'])
+        lessonHint = underline('l+num: change to lesson',17,colors[4]+cmod['bold'])
     
-    #hints = '  '.join([locals()[v] for v in locals() if 'hint' in v.lower()])
     hints = [resetHint,lessonHint,dayHint]
     for i,h in enumerate(hints):
         hints[i] = cmod['bold']+'[ '+h+cmod['bold']+' ]'+cmod['reset']
@@ -533,7 +532,9 @@ def showTimetable(_day=None,_lesson=None):
     tprint(cmod['bold']+borderIndex*' '+(borderLen-len(clean_ansi(dayLegend)))*'-'+dayLegend+'\n\033[K\n\033[K')
     #for h in sorted(hints,key=lambda x: len(clean_ansi(x))):
     #    tprint(padded(h))
-    tprint(spaceHint(sorted(hints,key=lambda x: len(clean_ansi(x))))+'\n\033[K')
+    hints = spaceHint(sorted(hints,key=lambda x: len(clean_ansi(x))))
+    for h in hints.split('\n'):
+        tprint('\033[K'+h)
     tprint(border)
     padBottom()
 
@@ -1288,9 +1289,9 @@ def showSettings():
         global debug,subSorter,gradeSorter,colorMode,ttDefault,prettyUser
 
         # write change to file
-        shutil.copyfile(os.path.join(curdir,'settings.py'),os.path.join(curdir,'settings_backup'))
-        settings = open(os.path.join(curdir,'settings.py')).read()
-        with open(os.path.join(curdir,'settings.py'),'w') as f:
+        shutil.copyfile(os.path.join(curdir,'storage/settings.py'),os.path.join(curdir,'backups/settings_backup'))
+        settings = open(os.path.join(curdir,'storage/settings.py')).read()
+        with open(os.path.join(curdir,'storage/settings.py'),'w') as f:
             for l in settings.split('\n')[:controlLines]:
                 f.write(l+'\n')
             f.write('\n')
@@ -1330,12 +1331,14 @@ def showSettings():
         try:
             float(n)
             return True
-        except:
+        except ValueError:
             return False
+
+
+    settings = open('storage/settings.py','r').read()
 
     ## setup
     global debug,subSorter,gradeSorter,colorMode,ttDefault,prettyUser
-    settings = open(os.path.join(curdir,'settings.py'),'r').read()
 
     names = []
     options = []
@@ -1641,9 +1644,9 @@ def showProfiles():
         #print(padded(f'Are you sure you want to delete {colors[1]}{name}{cmod['reset']}{cmod['bold']}? Y[n] '+cmod['reset'])+'\n\n\n\n\n\n'+border+'\n')
         padBottom()
         if qInp('').lower() == 'y':
-            shutil.copyfile(os.path.join(curdir,'usercfg.py'),'usercfg_backup')
+            shutil.copyfile(os.path.join(curdir,'storage/usercfg.py'),'backups/usercfg_backup')
             users.remove(users[users.index(choice)])
-            with open(os.path.join(curdir,'usercfg.py'),'w') as f:
+            with open(os.path.join(curdir,'storage/usercfg.py'),'w') as f:
                f.write(f'users = {json.dumps(users,indent=4)}')
         
         #check if current user is still in the config
@@ -1679,8 +1682,8 @@ def showProfiles():
                 u['isDefault'] = 'True'
 
 
-        shutil.copyfile('usercfg.py','usercfg_backup')
-        with open('usercfg.py','w') as f:
+        shutil.copyfile('storage/usercfg.py','backups/usercfg_backup')
+        with open('storage/usercfg.py','w') as f:
             f.write('users = '+json.dumps(users,indent=4))
 
         showProfiles()
@@ -1787,7 +1790,7 @@ def createUser():
     tprint('\n\n')
     
     ##trying to import usercfg
-    if 'usercfg.py' in os.listdir(os.path.dirname(__file__)):
+    if 'usercfg.py' in os.listdir(os.path.dirname(__file__),'storage'):
         try:
             sys.path.insert(0,os.path.dirname(__file__))
             from usercfg import users
@@ -1818,7 +1821,7 @@ def createUser():
 
     #store in file
     usersJson = json.dumps(users,indent=4,ensure_ascii=False)
-    with open(os.path.join(os.path.dirname(__file__),'usercfg.py'),'wb') as f:
+    with open(os.path.join(os.path.dirname(__file__),'storage/usercfg.py'),'wb') as f:
         f.write(f'users = {usersJson}'.encode('utf-8'))
 
     if 'usercfg' in sys.modules:
@@ -1931,12 +1934,11 @@ def editUser(user):
             newValue = value
         user[key] = newValue 
     users[userIndex] = user
-    shutil.copyfile(os.path.join(curdir,'usercfg.py'),'usercfg_backup')
-    with open(os.path.join(curdir,'usercfg.py'),'w') as f:
+    shutil.copyfile(os.path.join(curdir,'storage/usercfg.py'),'backups/usercfg_backup')
+    with open(os.path.join(curdir,'storage/usercfg.py'),'w') as f:
         f.write('users = '+json.dumps(users,indent=4))
     clr(f=1)
     return user['usr'],user['pwd'],user['ist']
-    #print(cmod['bold']+((borderLen-len(clean_ansi(dayLegend)))*'-'+dayLegend).center(tWidth)+cmod['reset'])
 
 #====================================================================
 
@@ -2003,12 +2005,12 @@ def start(_mode='online',_debug=0,shortcut=None):
 
     #adding name to usr if not present already
     userIndex = [u['usr'] for u in users].index(usr)
-    
+ 
     if not 'name' in users[userIndex].keys():
         users[userIndex]['name'] = name
-    shutil.copyfile(os.path.join(curdir,'usercfg.py'),os.path.join(curdir,'usercfg_backup'))
+    shutil.copyfile(os.path.join(curdir,'storage/usercfg.py'),os.path.join(curdir,'backups/usercfg_backup'))
         
-    with open(os.path.join(curdir,'usercfg.py'),'wb') as f:
+    with open(os.path.join(curdir,'storage/usercfg.py'),'wb') as f:
         f.write(b'users = '+json.dumps(users,ensure_ascii=False,indent=4).encode('utf-8'))
 
     #tprint('\n\n\nUI:')

@@ -73,8 +73,8 @@ def Bearer(user,pwd,ist):
     return maci
 
 class Student:
-    def __init__(self,usr=None,pwd=None,ist=None,verbose=None,timetable=True,jsonLocation=os.path.join(os.path.dirname(__file__),'marks.py'),offline=False,logger=None):
-        global log
+    def __init__(self,usr=None,pwd=None,ist=None,verbose=None,timetable=True,jsonLocation=None,offline=False,logger=None):
+        global log 
         if not logger == None:
             log = logger
         
@@ -88,7 +88,7 @@ class Student:
         self.pwd = pwd
         self.ist = ist
 
-        self.jsonLocation = jsonLocation
+        self.jsonLocation = (jsonLocation if jsonLocation else os.path.join(os.path.dirname(__file__),'storage/marks.py'))
         self.offline = offline
         
     def start(self):
@@ -132,8 +132,12 @@ class Student:
             self.timetable = forcett.timetable
         except:
             self.timetable = Timetable(self).get()
+        
+        #with open('dev/newTTFormatted.json','w') as f:
+        #    f.write(json.dumps(self.timetable,indent=4,ensure_ascii=False))
 
-        self.getInfo()
+        self.bdayDate, today = self.getBirthday()
+        self.isBday = (today == self.bdayDate)
 
         ##saving data
         self.serialize()
@@ -146,8 +150,8 @@ class Student:
         marksResponse = requests.get(f'https://{self.ist}.ekreta.hu/ellenorzo/V3/Sajat/Ertekelesek', headers=self.headers)                
         self.marksText = marksResponse.text
         
-        with open('sample_marks','w') as f:
-            f.write(self.marksText)
+        #with open('dev/sample_marks','w') as f:
+        #    f.write(self.marksText)
 
         ##filter data
         marks = []
@@ -204,7 +208,7 @@ class Student:
         return marks,subjectsList
 
     #get info about user
-    def getInfo(self):
+    def getBirthday(self):
         # returns info about the student
         response = requests.get(
                 'https://'+self.ist+'.ekreta.hu/ellenorzo/V3/Sajat/TanuloAdatlap',
@@ -220,10 +224,9 @@ class Student:
         if len(self.bdayDate[1]) == 1:
             self.bdayDate[1] = '0'+self.bdayDate[1]
 
-        self.bdayDate = '-'.join(self.bdayDate)
 
         today = str(timeModule.strftime('%m-%d'))
-        self.isBday = (today == self.bdayDate) 
+        return '-'.join(self.bdayDate), today
 
     ##store data in a json file self.jsonLocation (assigned at creation)
     def serialize(self):
@@ -301,29 +304,36 @@ class Timetable:
                 params=params
         )
 
+        #with open('dev/newTT.json','w') as f:
+        #    f.write(ttResponse.text)
+
         ##filter data
-        days = []
+        days = [ [],[],[],[],[] ]
         dbg('Sorting timetable...')
         tt = json.loads(ttResponse.text)
         day = []
+        previous = None
         for lesson in tt: 
-            # reset days
-            if lesson['Oraszam'] == 1:
-                day = []
-            
+            if lesson['Tipus']['Nev'] == 'TanevRendjeEsemeny':
+                continue
+
             startdate = lesson['KezdetIdopont']
             date = startdate.split('T')[0]
-            start = startdate.split('T')[1][:-1]
-            end = lesson['VegIdopont'].split('T')[1][:-1]
-            subject = lesson['Tantargy']
+            start = ':'.join(startdate.split('T')[1][:-1].split(':')[:-1])
+            end = ':'.join(lesson['VegIdopont'].split('T')[1][:-1].split(':')[:-1])
+ 
+            if not lesson['Tantargy']:
+                subject = None
+            else:
+                subject = lesson['Tantargy']['Kategoria']['Leiras']
+
             classroom = lesson['TeremNeve']
             teacher = lesson['TanarNeve']
             theme = lesson['Tema'] 
             
 
             ##create day dict
-            day.append(
-                {
+            formattedLesson = {
                 'date': date,
                 'start': start,
                 'end': end,
@@ -332,20 +342,24 @@ class Timetable:
                 'teacher': teacher,
                 'theme': theme,
                 'isCurrent': self.isCurrent(start,end,date)
-                }
-            )
+            }
 
-            ##add day if not in days already
-            if not day in days:
-                days.append(day)
+            if date == previous or previous == None:
+                day.append(formattedLesson)
+            else:
+                dIndex = datetime.datetime.strptime(date,"%Y-%m-%d").weekday()
+                days[dIndex-1] = day
+                day = [formattedLesson]
+            previous = date
 
         ##return a compound list containing each days lessons
+        days[-1] = day
         return days
 
     def isCurrent(self,_start,_end,_date):
         ##convert start,end to datetime objects
-        start = datetime.datetime.strptime(_start, '%H:%M:%S').time()
-        end = datetime.datetime.strptime(_end, '%H:%M:%S').time()
+        start = datetime.datetime.strptime(_start, '%H:%M').time()
+        end = datetime.datetime.strptime(_end, '%H:%M').time()
 
         #get current
         currentDay = _date

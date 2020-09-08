@@ -4,6 +4,7 @@ import sys,json,os,datetime,subprocess,shutil,time
 
 #to avoid asztal creating files from where its ran
 curdir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0,os.path.join(curdir,'storage'))
 
 #clear log file
 open(os.path.join(curdir,'log'),'w').close
@@ -20,15 +21,15 @@ def refresh():
 #import settings, create file if failed
 try: from settings import debug
 except Exception as e:
-    dbg(str(e))
+    print(str(e))
 
-    files = os.listdir(curdir)
-    if 'settings_backup' in files:
-        shutil.copyfile('settings_default','settings.py')
+    backups = os.listdir(curdir+'/backups/')
+    if 'settings_backup' in backups:
+        shutil.copyfile('backups/settings_default','storage/settings.py')
         time.sleep(0.1)
         from settings import debug 
-    elif 'settings_default' in files:
-        shutil.copyfile('settings_default','settings.py')
+    elif 'settings_default' in backups:
+        shutil.copyfile('backups/settings_default','storage/settings.py')
         time.sleep(0.1)
         from settings import debug
     
@@ -65,6 +66,7 @@ if __name__ == '__main__':
     from api import Student
     clr(1)
 
+    
     ##initialize student object based on offline mode
     if len(sys.argv) > 1 and 'o' in sys.argv[1]:
         offline = True
@@ -145,8 +147,6 @@ if __name__ == '__main__':
 
     except Exception as e:
         raise e
-
-
 
     ##start ui based on shortcut
     shortcut = None
