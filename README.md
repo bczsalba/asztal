@@ -24,23 +24,24 @@ git clone https://github.com/bczsalba/asztal
 cd asztal
 sudo python3 -m pip install requests
 ```
-
 After this, you can launch asztal by running `cd $HOME/asztal && python3 asztal.py` in a terminal.
-This isn't too great, so to make it simpler you can do 2 things:
 
- - to start asztal by entering `asztal` into a bash terminal: 
- 
-   ```bash
-   echo "alias asztal='cd $HOME/asztal && python3 asztal.py'" >> $HOME/.bashrc && bash
-   ```
+<details><summary><b>Additional quality of life fixes</b></summary>
+<br>
 
- - or on MacOS add a desktop shortcut:
-   ```bash
-   # create 'shortcut' icon
-   echo -e '#!/bin/bash\npython3 $HOME/asztal/asztal.py' >> $HOME/Desktop/asztal.command
-   # make executable // will need administrator password
-   sudo chmod +x $HOME/Desktop/asztal.command
-   ```
+- to start asztal by entering `asztal` into a bash terminal:  
+```bash
+echo "alias asztal='cd $HOME/asztal && python3 asztal.py'" >> $HOME/.bashrc && bash
+```
+	
+- or create a desktop shortcut (MacOS):
+```bash
+# create 'shortcut' icon
+echo -e '#!/bin/bash\npython3 $HOME/asztal/asztal.py' >> $HOME/Desktop/asztal.command
+# make executable // will need administrator password
+sudo chmod +x $HOME/Desktop/asztal.command
+```
+</details>
 
 ## Menus
 <h3 align=center> Grades: </h3>
