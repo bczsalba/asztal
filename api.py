@@ -92,6 +92,7 @@ class Student:
         self.offline = offline
         
     def start(self):
+        dbg('Starting API')
         if not self.offline:
             self.maci = Bearer(self.usr,self.pwd,self.ist)
         else:
@@ -167,8 +168,8 @@ class Student:
             if value == None:
                 value = mark['SzovegesErtek']
 
-            weight = mark['SulySzamErteke']
-            teacher = mark['Teacher']
+            weight = mark['SulySzazalekErteke']
+            teacher = mark['ErtekeloTanarNeve']
             dateFull = mark['RogzitesDatuma']
             date = dateFull.split('T')[0]
             time = dateFull.split('T')[1][:-4]
@@ -199,7 +200,6 @@ class Student:
                             'time': time
                         }
                 )
-
 
         ##sort data
         marks.sort(key=lambda x: [x['date'],x['time']])

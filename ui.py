@@ -1,15 +1,18 @@
-#!/usr/bin/env python3
+# :main=./asztal.py
 
 #imports
-import os,shutil
-import sys
+import os
 import re
+import sys
 import json
 import time
-import signal
 import math
 import random
+import signal
+import shutil
+import requests
 import datetime
+import subprocess
 from getpass import getpass
 
 #used for log file
@@ -29,7 +32,6 @@ from settings import *
 daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday']
 cursorUp = '\033[1A'
 silence = '\033[1A'+'\033[K'
-customColors = 'True'
 
 #color
 def getColors():
@@ -45,7 +47,7 @@ def getColors():
         c['three'] = '\033[38;5;226m'    #yellow
         c['four'] = '\033[38;5;156m'     #light green
         c['five'] = '\033[32m'           #green
-    
+ 
     c['fade'] = '\033[38;5;245m'
     return [c['fade'],c['one'],c['two'],c['three'],c['four'],c['five']]
 
@@ -74,7 +76,7 @@ def clr(f=0):
     else:
         caller = sys._getframe().f_back.f_code.co_name
         print(caller.center(40,'-'))
- 
+
 #toggleable print, logging
 def dbg(*args,f=0,time=1,show=1):
     _pad = '     '
@@ -140,7 +142,7 @@ except Exception:
     dbg("No tWidth given, defaulting to dynamic.")
     tWidth,tHeight = os.get_terminal_size()
 
-border = (round(tWidth/2)-1)*'-='+'-'
+border = (tWidth//2-1)*'-='+'-'
 
 #from https://stackoverflow.com/a/38662876; rid string of ansi sequences
 def clean_ansi(line):
@@ -175,7 +177,7 @@ def breakLine(_inline,_padLen=0,_len=tWidth,_separator=' '):
         return _inline
 
 # pads string to center in _len
-def padded(_str,_len=tWidth):
+def padded(_str,_len=tWidth-(1 - tWidth%2)):
     mult = round( (_len-len(clean_ansi(_str)))/2 )
     pad = mult*' '
     return pad+_str
@@ -202,19 +204,27 @@ def makeHint(s,col='',_index=None,noUnderline=False):
     else:
         ind = 0
 
+    dbg(ind)
+
+    dbg(ind)
+
     
     return cmod['bold']+'[ '+underline(s,ind,cmod['bold']+col)+cmod['bold']+' ]'+cmod['reset']
 
 def spaceHint(hints,spacer=' '):
     spaced = spacer.join(hints)
-    if not len(clean_ansi(spacer.join(hints))) > tWidth:
+    if not len(clean_ansi(spacer.join(hints))) > tWidth*(9/10):
         return padded(spaced)
     else:
         maxLen = max([len(clean_ansi(h)) for h in hints])
         return '\n'.join([int((tWidth-maxLen)/2)*' '+h for h in hints])    
 
-def printBetween(s,_len=tWidth,_char='|',_pad=1,_offset=0,noPrint=False):
-    retrstr = _char+' '*_pad+s+cmod['reset']+(_len-len(clean_ansi(s))-3-_pad)*' '+_char
+def printBetween(s,_len=len(border),_char='|',_pad=1,_offset=0,noPrint=False):
+    stringLength = len(clean_ansi(s))
+    #evenOddPad = (0 if (_len-stringLength) % 2 == 0 else -1)
+    #dbg('evenOddPad:',evenOddPad)
+    evenOddPad = 0 # TODO
+    retrstr = _char+' '*_pad+s+cmod['reset']+(_len-stringLength-3-_pad+evenOddPad)*" "+_char
     retrstr = _offset*' '+retrstr
     if noPrint:
         return retrstr
@@ -223,6 +233,9 @@ def printBetween(s,_len=tWidth,_char='|',_pad=1,_offset=0,noPrint=False):
 
 # approximate detection
 def approximateInput(inp,lst,index=False):
+    if inp == '':
+        return False
+
     for e in lst:
         for i in range(len(e)+1):
             if inp == e[:i].lower():
@@ -231,6 +244,8 @@ def approximateInput(inp,lst,index=False):
                     return i
                 else:
                     return e
+    else:
+        return False
 
 #=============================display===============================
 
@@ -304,10 +319,13 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
                 #if debug == 'True':
                 #    raise e
                 return False
-        
-        fun = globals()['show'+choice.title()]
-        clr()
-        fun()
+       
+        if choice:
+            fun = globals()['show'+choice.title()]
+            clr()
+            fun()
+        else:
+            showTitle()
         
         if not noInp:
             inp = qInp('')
@@ -349,8 +367,8 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
         borderlen = maxlen-npad
 
         tprint(cmod['bold']+' '+padded((borderlen)*'-'))
-        for i,s in enumerate(items):
-            c = (cols[i] if i > 1 else '')
+        paddedColors = ['','']+colors[1:]+colors[1:]
+        for i,(s,c) in enumerate(zip(items,paddedColors)):
             i -= 1
             index = (str(i-1)+'. ' if i > 0 else '')
             l = ' '+padded(printBetween(index+c+s,_len=borderlen+1,noPrint=True,_char=cmod['bold']+'|'))
@@ -397,7 +415,6 @@ def showTimetable(_day=None,_lesson=None):
     def getClosestDay(d=None):
         '''0:monday, 6: sunday'''
         dbg('getClosestDay:',d,len(timetable))
-        dbg(timetable)
 
         results = []
         for day in range(5):
@@ -474,17 +491,30 @@ def showTimetable(_day=None,_lesson=None):
             l[key] = str(l[key])
         isCurrent = (i == lesson)
         index = cmod['bold']+str(i)+'. '
-        subject = (colors[1] if isCurrent else '')+l['subject']
+        sub = l['subject']
+        limit = tWidth*(1/2)
+        formattedSubject = (sub if len(sub) <= limit else sub[:int(limit)-3].rstrip()+'...')
+        subject = (colors[1] if isCurrent else '')+formattedSubject
         
         # "unfolds" currently selected lesson
         if isCurrent:
-            classroom = cmod['reset']+cmod['bold']+' / '+l['classroom']+cmod['reset']
-            lines.append(index+subject+classroom+cmod['reset'])
+            classroom = l['classroom']
+            
+            title = index+subject
             pad = 3
+            if len(clean_ansi(title+' / '+classroom)) <= tWidth//3*2:
+                classroom = cmod['reset']+cmod['bold']+' / '+classroom+cmod['reset']
+                title += classroom+cmod['reset']
+                lines.append(title)
+            else:
+                lines.append(title)
+                lines.append(pad*' '+colors[0]+classroom+cmod['reset'])
+
+            teacher = pad*' '+colors[0]+l['teacher']+cmod['reset']
             startend = colors[0]+l['start']+'-'+l['end']+cmod['reset']
+            
+            lines.append(teacher)
             lines.append(pad*' '+startend)
-            line = pad*' '+colors[0]+l['teacher']+cmod['reset']
-            lines.append(line)
         else:
             lines.append(index+subject+cmod['reset'])
     
@@ -499,7 +529,7 @@ def showTimetable(_day=None,_lesson=None):
     tprint('\n')
     tprint(border)
     tprint('\n')
-    tprint(cmod['bold']+smolBorder+cmod['reset'])    
+    tprint(cmod['bold']+smolBorder+cmod['reset']) 
     
     # body print
     for l in lines:
@@ -529,14 +559,19 @@ def showTimetable(_day=None,_lesson=None):
     dayLegend += '\033[K'
     
     # bottom print
-    tprint(cmod['bold']+borderIndex*' '+(borderLen-len(clean_ansi(dayLegend)))*'-'+dayLegend+'\n\033[K\n\033[K')
-    #for h in sorted(hints,key=lambda x: len(clean_ansi(x))):
-    #    tprint(padded(h))
+    tprint(
+            cmod['bold']+
+            borderIndex*' '+
+            (borderLen-len(clean_ansi(dayLegend)))*'-'+
+            dayLegend+'\n\033[K'
+    )
     hints = spaceHint(sorted(hints,key=lambda x: len(clean_ansi(x))))
+    
     for h in hints.split('\n'):
         tprint('\033[K'+h)
-    tprint(border)
+    tprint('\n\n'+border)
     padBottom()
+
 
     
     ## input
@@ -926,9 +961,9 @@ def showGrades(noInp=False,inp=None):
         borderLen = longest+12
         
         # get hint array, color and color, print them
-        hints = ['half term','current','end of term','difference','ed-it']
-        col = [(colors[4] if mode in h.replace('-','') else colors[1]) for h in hints]
-        hint = spaceHint([makeHint(h,col=c) for h,c in zip(hints,col)])
+        options = ['half term','current','end of term','difference','ed-it']
+        col = [(colors[4] if mode in h.replace('-','') else colors[1]) for h in options]
+        hints = spaceHint([makeHint(h,col=c) for h,c in zip(options,col)])
         title = 'overall'
         subBorder = cmod['bold']+title
         tprint('\n\n')
@@ -967,12 +1002,15 @@ def showGrades(noInp=False,inp=None):
 
         # print bottom border
         tprint(padded(cmod['bold']+((borderLen-1)*'-'))+cmod['reset']+'\n')
+
+        hintLines = hints.split('\n')
+        padBottom()
+        tprint(f'\033[{2+len(hintLines)}A')
         
         # print hints
-        for h in hint.split('\n'):
+        for h in hintLines:
             tprint(h)
 
-        padBottom()
         
         # edit input section
         if mode == 'edit':
@@ -997,10 +1035,10 @@ def showGrades(noInp=False,inp=None):
          
         ## input
         if not 'inp' in locals(): inp = qInp('')
-        valid = [(h[h.index('-')+1] if '-' in h else h[0]) for h in hints]
+        valid = [(h[h.index('-')+1] if '-' in h else h[0]) for h in options]
         dbg(valid)
         if inp.lower() in valid:
-            modes = [h.split(' ')[0] for h in hints]
+            modes = [h.split(' ')[0] for h in options]
             vIndex = valid.index(inp.lower())
             mode = modes[vIndex].replace('-','')
 
@@ -1033,9 +1071,9 @@ def showGrades(noInp=False,inp=None):
             if not isinstance(value,int):
                 continue
             _type = val['type']
-            if not _type == 'MidYear':
+            if not _type == 'evkozi_jegy_ertekeles':
                 continue
-            weight = int(val['weight'][0])
+            weight = val['weight']/100
             weightedGrade = value * weight
             _vals.append(weightedGrade)
             _len += weight #adds however we added for weight(100%->1,200%->2)
@@ -1128,7 +1166,7 @@ def showGrades(noInp=False,inp=None):
         gradestr = f'{index}. {sub}'+' '*(longest-len(sub))+f'[{getAvg(sub,gradeStyle,_ret="str")}] |: '
         
         #remove text grades
-        grades = reversed([v for v in marks if isinstance(v['value'],int) and v['type'] == 'MidYear'])
+        grades = reversed([v for v in marks if isinstance(v['value'],int) and v['type'] == 'evkozi_jegy_ertekeles'])
 
         #sorting list of grades according to settings
         if gradeSorter == 'time':
@@ -1169,8 +1207,7 @@ def showGrades(noInp=False,inp=None):
 
         broken = breakLine(gradestr,_padLen=longest+14,_len=tWidth-5).split('\n')
         for l in broken:
-            printBetween(l)
-            #tprint(f'| {l}'+(len(border)-len(clean_ansi(l))-3)*' '+'|')
+            printBetween(l,_len=tWidth)
 
         #if the subject is in globals and has data the lines get printed
         if tWidth < 90:
@@ -1189,11 +1226,13 @@ def showGrades(noInp=False,inp=None):
             ]
     tprint()
     
-    if not noInp:
-        for h in spaceHint(hints).split('\n'):
-            tprint(h)
-   
     padBottom()
+    hintLines = spaceHint(hints).split('\n')
+    print(f'\033[{3+len(hintLines)-1}A')
+
+    if not noInp:
+        for h in hintLines:
+            tprint(h) 
 
     if not noInp:
         inp = qInp('')
@@ -1217,11 +1256,6 @@ def showGrades(noInp=False,inp=None):
 def showRecents(): 
     if not len(marks):
         tprint('\n\n\n\n'+border+padded('|'))
-        """
-        tprint((tHeight//2-printedLines)*'\n'+cmod['bold']+'No grades to iterate over.'.center(tWidth)+cmod['reset'])
-        padBottom()
-        tprint(border)
-        """
         l = "No grades available."
         # -----
         tprint(padded((len(l)+4)*"-"))
@@ -1258,24 +1292,25 @@ def showRecents():
         maxLen = max(len(clean_ansi(l)) for l in lines)
 
         # top border
-        print(padded(index+(maxLen+4-len(index))*'-'))
+        tprint(padded(index+(maxLen+4-len(index))*'-'))
 
         # lines
         for l in lines:
-            print(padded(printBetween(l,_len=maxLen+5,noPrint=True)))
+            tprint(padded(printBetween(l,_len=maxLen+5,noPrint=True)))
         
         # bottom border
         bborder = padded((maxLen+4)*'-')
-        print(bborder)
+        tprint(bborder)
         
         # connecting lines
         if not i == len(marks)-1: 
             centerLen = random.randint(len(index)+6,maxLen)
             offset = random.randint(maxLen-15,maxLen+15)
             for _ in range(2):
-                print(padded('||',_len=6+tWidth-offset/4))
+                tprint(padded('||',_len=6+tWidth-offset/4))
         
         time.sleep(animTime*0.0005)
+    padBottom()
 
 #settings menu
 def showSettings():
@@ -1314,6 +1349,7 @@ def showSettings():
 
         # refresh dbg in asztal since clr operates on it
         refresh()
+        globals()['colors'] = getColors()
         dbg('writeSettings successful.')        
 
     def invalidChoice():
@@ -1335,7 +1371,7 @@ def showSettings():
             return False
 
 
-    settings = open('storage/settings.py','r').read()
+    settings = open(curdir+'/storage/settings.py','r').read()
 
     ## setup
     global debug,subSorter,gradeSorter,colorMode,ttDefault,prettyUser
@@ -1547,6 +1583,7 @@ def showSettings():
 
 #profile menu
 def showProfiles():
+    from marks import usr as oldUsr
     global createUser,listUsers,editUser 
 
     clr()
@@ -1556,11 +1593,15 @@ def showProfiles():
     clrs = [colors[5],colors[4],colors[3],colors[2],colors[1]]
 
     options = [makeHint(s,clrs[i]) for i,s in enumerate(optRaw)]
+    dbg(options)
+    hints = spaceHint(options)
     
     tprint('\n\n'+border+'\n\n')
-    listUsers(noInp=1,noIndex=1,showDefault=True)
+    listUsers(noInp=1,showIndex=1,showDefault=True,showDash=True,old=oldUsr)
 
-    tprint('\n\n'+padded('  '.join(options)))
+    tprint('')
+    for hint in hints.split('\n'):
+        tprint(hint)
     tprint('\n\n'+border)
     padBottom()
     
@@ -1592,7 +1633,6 @@ def showProfiles():
         clr() 
         try: del locals()['oldUsr']
         except: pass
-        from marks import usr as oldUsr
 
         tprint('\n\n'+border+'\n\n\n'+padded(cmod['bold']+'Choose profile to switch to:\n\n'+cmod['reset']))
         choice = listUsers(border='\n\n\n'+border,showDefault=False,old=oldUsr)
@@ -1691,58 +1731,115 @@ def showProfiles():
 ##update menu
 def showUpdate():    
     clr()
+    newLog = requests.get("https://raw.githubusercontent.com/bczsalba/asztal/master/changelog").text.split('\n')
+    newVersion = float(newLog[0][:-1])
+    changelog = '\n'.join(newLog[1:]).split('\n')
 
-    try:
-        import update
-        #if animTime: time.sleep(animTime)
-        tprint('\n\n'+border+'\n')
-    except Exception as e:
-        dbg('update: '+str(e))
-        tprint(f'Error ({e}) during importing of update.')
-        return
-   
-    newVersion,changelog = update.getNew()
-    linePad = '    '
-    for i,l in enumerate(changelog):
-        changelog[i] = linePad+breakLine(l,_len=tWidth-len(linePad)-2,_padLen=len(linePad)+2)
+    tprint('\n\n'+border+'\n\n')
 
-    changelog = '\n'.join(changelog)
-    if newVersion > vrs:
-        tprint(cmod['bold']+('New version '+str(newVersion)+' available!').center(tWidth)+'\n\n'+'Changelog:'.center(tWidth)+cmod['reset'])
-    else:
-        tprint(cmod['bold']+'No new version available.'.center(tWidth)+'\n\n'+'Current changelog:'.center(tWidth)+cmod['reset'])
-
-    tprint(colors[0]+linePad+str(newVersion)+':')
-    for l in changelog.split('\n'):
-        tprint(l)
-    tprint(cmod['reset'])
-
-    updateHint = makeHint('update now',colors[4])
-    forceHint = makeHint('force update',colors[4])
-
-    if newVersion > vrs:
-        hint = updateHint
-        conf = 'u'
-    else:
-        hint = forceHint
-        conf = 'f'
-
-    tprint(padded(hint)+cmod['reset'])
-    tprint('\n'+border)
-    padBottom()
-    inp = qInp('').lower()
+    ## first box
+    modOffset = 1-tWidth % 2
+    borderLen = 31+2*modOffset
     
-    if inp == conf:
+    _char = cmod['bold']+'|'
+
+    # vrs________
+    topBorder = 'versions'+(borderLen-8)*'_'
+    tprint(cmod['bold']+topBorder.center(tWidth)+cmod['reset'])
+
+    # |          |
+    tprint(cmod['bold']+padded(printBetween('',noPrint=1,_len=borderLen+1,_char=_char))+cmod['reset'])
+
+    installedVrs = cmod['bold']+colors[0]+str(vrs)
+    newVrs = cmod['bold']+colors[4]+str(newVersion)
+    
+    # | <>:    ..|
+    installed = 'installed:'
+    installed += (borderLen-len(installed)-len(clean_ansi(installedVrs))-4)*' '
+    installed += installedVrs+' '
+    tprint(cmod['bold']+padded(printBetween(installed,_len=borderLen-1,noPrint=1,_char=_char+cmod['reset'])))
+
+    # | <>:    ..|
+    newest = 'newest:'
+    newest += (borderLen-len(newest)-len(clean_ansi(newest)))*' '
+    newest += newVrs+' '
+    tprint(cmod['bold']+padded(printBetween(newest,_len=borderLen+1,noPrint=1,_char=_char+cmod['reset'])))
+    
+    # |          |
+    tprint(cmod['bold']+padded(printBetween('',noPrint=1,_len=borderLen+1,_char=_char))+cmod['reset'])
+
+    # -----o-----
+    bottomBorder = '-'*(borderLen//2)+'o'+'-'*(borderLen//2)
+    tprint(cmod['bold']+bottomBorder.center(tWidth)+cmod['reset'])
+    
+    ## interlude
+    #      |     
+    tprint(cmod['bold']+(borderLen//2*' '+'|'+borderLen//2*' ').center(tWidth))
+    tprint((borderLen//2*' '+'|'+borderLen//2*' ').center(tWidth))
+    tprint((borderLen//2*' '+'|'+borderLen//2*' ').center(tWidth)+cmod['reset'])
+    
+
+    ## second box 
+    maxLen = max([39,max(len(l) for l in changelog)+5]) 
+    borderLen = min(maxLen,tWidth-10+(0 if tWidth % 2 else 0))
+    middle = borderLen//2
+    
+    # -----'-----
+    topBorder = 'changelog'+(borderLen-10-middle)*'_'+"o"+middle*'_'
+    tprint(cmod['bold']+topBorder.center(tWidth)+cmod['reset'])
+
+    # |         |
+    tprint(padded(printBetween('',noPrint=1,_len=borderLen+1,_char=_char)))
+
+    # | content |
+    for l in changelog:
+        l += " "
+        broken = breakLine(l,_padLen=2,_len=borderLen-4)
+        brokenList = broken.split('\n')
+
+        for line in brokenList:
+            line = line.replace('-',cmod['bold']+colors[4]+'-'+cmod['reset'])
+            if not line == '':
+                tprint(padded(printBetween(line,noPrint=1,_len=borderLen+1,_char=_char+cmod['reset'])))
+    
+    # |         |
+    tprint(padded(printBetween('',noPrint=1,_len=borderLen+1,_char=_char)))
+    
+    # -----------
+    bottomBorder = '-'*(borderLen)
+    tprint(cmod['bold']+bottomBorder.center(tWidth)+cmod['reset']+'\n')
+
+
+    # logic
+    canUpdate = vrs < newVersion
+
+    # hints
+    hint = ('update' if canUpdate else 'reinstall')
+    hintLine = f"[ {underline(hint,0,cmod['bold'])} ]"
+    for h in hintLine.split('\n'):
+        tprint(padded(h))
+
+    
+    # bottom
+    tprint('\n\n'+border+'\n')
+    padBottom()
+
+    inputOptions = (['update'] if canUpdate else ['reinstall'])
+
+    # input
+    confirmation = approximateInput(input(),inputOptions)
+    if confirmation:
         clr()
-        tprint('\n\n'+border+'\n')
-        update.start(pad=linePad)
-        tprint('\n'+border)
-        if qInp('Restart required. Do it now? [Y]n ').lower() != 'n':
-            sys.exit()
+        if canUpdate: 
+            output = subprocess.check_output('git pull',shell=True).decode('utf-8')
+            print('Update complete.'.center(tWidth))
         else:
-            showUpdate()
+            output = subprocess.check_output('git reset --hard HEAD',shell=True).decode('utf-8')
+            print('Reinstall complete.'.center(tWidth))
+        sys.exit()
     else:
         showTitle()
+
 
 #==========================profile functions===========================
 # these need to be outside of showProfiles so that asztal.py has access
@@ -1790,7 +1887,8 @@ def createUser():
     tprint('\n\n')
     
     ##trying to import usercfg
-    if 'usercfg.py' in os.listdir(os.path.join(os.path.dirname(__file__),'storage')):
+    if 'usercfg.py' in os.listdir(
+            os.path.join(os.path.dirname(__file__),'storage')):
         try:
             sys.path.insert(0,os.path.dirname(__file__))
             from usercfg import users
@@ -1831,77 +1929,69 @@ def createUser():
     return users
 
 ##list users to choose from
-def listUsers(users=None,noInp=False,noIndex=False,showDefault=True,border=None,old=None):
+def listUsers(users=None,old=None,border=None,noInp=False,showIndex=True,showDefault=True,showDash=False):
     #from ui import color,clean_ansi
     from settings import prettyUser
-
 
     if users == None:
         from usercfg import users
     users.sort(reverse=True,key=lambda x: x['isDefault'])
 
     # border
-    borderLen = 32+(0 if noIndex else 2)
+    borderLen =  39
+    borderLen += (0 if showIndex else 2)
+    #borderLen += (0 if prettyUser == 'True' else 0)
+
     borderSmol = cmod['bold']+f"{borderLen*'-'}".center(tWidth)+cmod['reset']
     tprint(borderSmol)
-    
+   
     for i,user in enumerate(users):
-        default = (colors[2]+'*'+cmod['reset'] if showDefault and user['isDefault'] == 'True' else ' ')
         current = user['usr']
-
-        # get start of borderSmol to base center upon
-        for bI,c in enumerate(clean_ansi(borderSmol)):
-            if not c == ' ':
-                borderStart = bI
-                break
-
+        cleanLine = False
         
-        paddingLeft = ' '*borderStart
-        
+        line = ''
+
         ## index
-        # grey out current account to avoid confusion
+        if showIndex:
+            line += cmod['bold']+str(i)+': '
+        
         if current == old:
-            index = f'|{colors[0]} '
-        else:
-            index = cmod['bold']+'| '+cmod['reset']
-        
-        #with index number
-        if not noIndex:
-            index += str(i)+': ' 
-        #without index number nothing needs to be done
-
-
-        ## middle
-        # if we can display the user and we also want to
-        if 'name' in user.keys() and prettyUser == 'True':
-            #mid = name
-            mid = ('' if colors[0] in index else cmod['bold'])+int(borderLen/15)*' '+user['name']+cmod['reset']
- 
-        else:
-            #mid = user_info
-            if colors[0] in index:
-                mid = (int(borderLen/15)-1)*' '+user['usr'] + ' @ ' + user['ist'] + cmod['reset']
+            if showDash:
+                line += cmod['bold']+colors[4]+'- '+cmod['reset']
             else:
-                mid = colors[4]+cmod['bold']+(int(borderLen/15)-1)*' '+user['usr']+cmod['reset'] + cmod['bold']+ ' @ ' + colors[1]+user['ist']+cmod['reset']
+                # flag to call clean_ansi on line later
+                cleanLine = True
 
- 
-        ## end
-        end = ''
-        # if showing default indicator
-        if showDefault:
-            end += default
-        end = ' '*(borderLen-(len(clean_ansi(index+mid+end+default)))-1)+end
-        end += cmod['bold']+' |'+cmod['reset']
+        else:
+            line += '  '
         
-        tprint(paddingLeft+index+mid+end)
-    
- 
+        ## body
+        doPrettyUser = ('name' in user.keys() and prettyUser == 'True')
+        if doPrettyUser:
+            if showDefault and current == old:
+                default = colors[2]
+            else:
+                default = ''
+            line += cmod['bold']+default+user['name']+''
+
+        else:
+            line += colors[4]+cmod['bold']
+            line += user['usr']
+            line += cmod['reset']+cmod['bold']
+            line += ' @ '
+            line += colors[1]+user['ist']
+        
+        offset = 1
+        if cleanLine:
+            line = colors[0]+clean_ansi(line)
+        tprint(padded(printBetween(line,noPrint=1,_len=borderLen+offset,_char=cmod['bold']+'|')))
+
     tprint(borderSmol)
     
-    if not border == None:
+    if border:
         tprint(border)
         padBottom()
-
+    
 
     if not noInp:
         inp = qInp('')

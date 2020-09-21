@@ -11,6 +11,8 @@
 #
 #. colorMode : ['none','weight','grade','full']-['None','weight','grade','full']-'Color profile'
 #
+#. customColors : ['on','off']-['True','False']-'Custom color file'
+#
 #. ttdefault : ['lesson','day']-['l','d']-'Default behaviour for number inputs in timetable menu'
 #
 #. prettyUser : ['yes','no']-[True,False]-'"yes" shows the persons name, no shows their data in the profiles menu'
@@ -23,6 +25,7 @@ debug = "False"
 subSorter = "time"
 gradeSorter = "time"
 colorMode = "grade"
+customColors = "True"
 ttdefault = "l"
 prettyUser = "True"
 animTime = 3
