@@ -204,11 +204,6 @@ def makeHint(s,col='',_index=None,noUnderline=False):
     else:
         ind = 0
 
-    dbg(ind)
-
-    dbg(ind)
-
-    
     return cmod['bold']+'[ '+underline(s,ind,cmod['bold']+col)+cmod['bold']+' ]'+cmod['reset']
 
 def spaceHint(hints,spacer=' '):
@@ -287,7 +282,8 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
             if speak:
                 time.sleep(2)
             else:
-                time.sleep(random.randint(5,10)/100)
+                time.sleep(random.randint(5,0)/100)
+        
         clr(f=1)
         print(tWidth//2*'\n'+'   Goodnight lil fella...'+'\n'+'   Wobbly (Jun. 15-27, 2020)'+'\n')
         if qInp():
@@ -1211,8 +1207,7 @@ def showGrades(noInp=False,inp=None):
 
         #if the subject is in globals and has data the lines get printed
         if tWidth < 90:
-            printBetween('')
-            #tprint('|'+(len(border)-2)*' '+'|')
+            printBetween('',_len=tWidth)
             
     #bottom border
     dbg('Overall '+str(sum(avgs)/len(subjectsList)))
@@ -1749,7 +1744,6 @@ def showUpdate():
 
     # |          |
     tprint(cmod['bold']+padded(printBetween('',noPrint=1,_len=borderLen+1,_char=_char))+cmod['reset'])
-
     installedVrs = cmod['bold']+colors[0]+str(vrs)
     newVrs = cmod['bold']+colors[4]+str(newVersion)
     
@@ -1757,11 +1751,11 @@ def showUpdate():
     installed = 'installed:'
     installed += (borderLen-len(installed)-len(clean_ansi(installedVrs))-4)*' '
     installed += installedVrs+' '
-    tprint(cmod['bold']+padded(printBetween(installed,_len=borderLen-1,noPrint=1,_char=_char+cmod['reset'])))
+    tprint(cmod['bold']+padded(printBetween(installed,_len=borderLen+1,noPrint=1,_char=_char+cmod['reset'])))
 
     # | <>:    ..|
     newest = 'newest:'
-    newest += (borderLen-len(newest)-len(clean_ansi(newest)))*' '
+    newest += (borderLen-len(newest)-len(clean_ansi(newest))-1)*' '
     newest += newVrs+' '
     tprint(cmod['bold']+padded(printBetween(newest,_len=borderLen+1,noPrint=1,_char=_char+cmod['reset'])))
     
@@ -1781,7 +1775,8 @@ def showUpdate():
 
     ## second box 
     maxLen = max([39,max(len(l) for l in changelog)+5]) 
-    borderLen = min(maxLen,tWidth-10+(0 if tWidth % 2 else 0))
+    borderLen = min(maxLen,tWidth-10)
+    borderLen += 1- borderLen % 2
     middle = borderLen//2
     
     # -----'-----
@@ -1789,7 +1784,7 @@ def showUpdate():
     tprint(cmod['bold']+topBorder.center(tWidth)+cmod['reset'])
 
     # |         |
-    tprint(padded(printBetween('',noPrint=1,_len=borderLen+1,_char=_char)))
+    tprint(padded(printBetween('',noPrint=1,_len=borderLen+1,_char=_char))+cmod['reset'])
 
     # | content |
     for l in changelog:
@@ -1815,16 +1810,16 @@ def showUpdate():
 
     # hints
     hint = ('update' if canUpdate else 'reinstall')
-    hintLine = f"[ {underline(hint,0,cmod['bold'])} ]"
+    hintLine = makeHint(hint,colors[4])
     for h in hintLine.split('\n'):
         tprint(padded(h))
-
     
     # bottom
     tprint('\n\n'+border+'\n')
     padBottom()
 
     inputOptions = (['update'] if canUpdate else ['reinstall'])
+    col = colors[1]
 
     # input
     confirmation = approximateInput(input(),inputOptions)
@@ -1839,7 +1834,6 @@ def showUpdate():
         sys.exit()
     else:
         showTitle()
-
 
 #==========================profile functions===========================
 # these need to be outside of showProfiles so that asztal.py has access
