@@ -1,9 +1,4 @@
-1.21:
-- properly updated grades menu to new api
-- fixed an issue with paths in api.py
-- fixed timetable overflow lines
-- adjusted some hint spacing
-- made the recents menu pad the bottom of the screen
-- updated the profiles screen
-- fixed a bug in create user
-- entirely rewrote update menu to use github and fit UI
+1.22:
+- fixed things in grades
+- improved input system
+- timetable now uses local time

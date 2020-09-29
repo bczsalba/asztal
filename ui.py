@@ -240,7 +240,7 @@ def approximateInput(inp,lst,index=False):
                 else:
                     return e
     else:
-        return False
+        return inp
 
 #=============================display===============================
 
@@ -317,7 +317,10 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
                 return False
        
         if choice:
-            fun = globals()['show'+choice.title()]
+            try:
+                fun = globals()['show'+choice.title()]
+            except KeyError:
+                showTitle()
             clr()
             fun()
         else:
@@ -628,11 +631,6 @@ def showGrades(noInp=False,inp=None):
         if _skip == 0:
             rawInp = ''.join([''.join(a.split(' ')) for a in args])
        
-            #if len(rawInp) == 1:
-            #    dbg('shits too short')
-            #    gradesMenu()
-            #    clr()
-
             #filters out grades from input
             for i,char in enumerate(rawInp):
                 if not char.isdigit():
@@ -648,24 +646,25 @@ def showGrades(noInp=False,inp=None):
         #if no sub is provided it gets assigned based on index, grades get assigned based on _grades
         sub = (sublist[_index] if _sub == None else _sub)
         if not 'allGrades' in globals():
-            allGrades = [v for v in marks if v['subject'] == sub and v['type'] == 'MidYear' and isinstance(v['value'],int)]
+            allGrades = [v for v in marks if v['subject'] == sub and v['type'] == 'evkozi_jegy_ertekeles' and isinstance(v['value'],int)]
         dbg(f'sub: {sub}\nlen(aG): {len(allGrades)}')
         
         
         ###string assignment/formatting
         #assigning the needed arrays
         simGrades = ([int(g) for g in [clean_ansi(v) for v in _grades]] if '_grades' in locals() else [])
-        actGrades = [(cmod['bold'] if v['weight'] == '200%' else '')+str(v['value']) for v in allGrades]
+        actGrades = [(cmod['bold'] if v['weight'] == 200 else '')+str(v['value']) for v in allGrades]
         
         dbg(f'sim,act: {str(simGrades)},{actGrades}')
 
         #colors, formats grade strings
-        actGradesColored = ",".join([f'{colors[int(clean_ansi(g))]}{g}{cmod["reset"]}' for g in actGrades])
+        char = (',' if len(actGrades) else '')
+        actGradesColored = char.join([f'{colors[int(clean_ansi(g))]}{g}{cmod["reset"]}' for g in actGrades])
 
         #avg calculations and formatting
         allGradesInt = []
         for v in allGrades:
-            for _ in range(int(v['weight'][0])):
+            for _ in range(v['weight']//100):
                 allGradesInt.append(v['value'])
         
         avg = ( sum(allGradesInt+simGrades)/len(allGradesInt+simGrades) if len(allGradesInt+simGrades) > 0 else 0)
@@ -675,14 +674,14 @@ def showGrades(noInp=False,inp=None):
         avgStr = cmod['bold']+(f'Current average: ' if simGrades == [] else 'Simulated average: ')+cmod['reset'] + avgValue
         subStr = f'{cmod["bold"]}{sub}{cmod["reset"]}: '
         actual = f'{actGradesColored}' 
-        simulated = (f',{",".join([cmod["italic"]+colors[0]+str(a) for a in simGrades])}{cmod["reset"]}' if len(simGrades) > 0 else '')
+        simulated = (f'{char}{",".join([cmod["italic"]+colors[0]+str(a) for a in simGrades])}{cmod["reset"]}' if len(simGrades) > 0 else '')
         hints = ['num to add','-num to remove']
         cols = [colors[4],colors[1]]
         hint = '  '.join([makeHint(s,cols[i],noUnderline=True) for i,s in enumerate(hints)])
 
         #formatting grades with line breaking
         _line = f'{cmod["bold"]}Grades:{cmod["reset"]} '+actual+simulated
-        _sep = ','
+        _sep = char
         _padLen = len(f'Grades: ')
         _len = tWidth-5
         gradesFormatted = breakLine(_line,_padLen,_len,_sep)
@@ -717,8 +716,6 @@ def showGrades(noInp=False,inp=None):
         padBottom()
 
         ###input
-        #get input, format it so the program doesnt clean exit
-
         inp = ''.join(qInp('').strip().split(' '))
        
         #input handling
@@ -794,7 +791,7 @@ def showGrades(noInp=False,inp=None):
 
         
         #looping through the elements of the choice subject's list
-        for v in [v for v in reversed(marks) if v['subject'] == choice and v['type'] == 'MidYear']:   
+        for v in [v for v in reversed(marks) if v['subject'] == choice and v['type'] == 'evkozi_jegy_ertekeles']:   
             #value
             if isinstance(v['value'],str):
                 value = f'{cmod["italic"]}text{cmod["reset"]}'
