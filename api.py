@@ -263,10 +263,8 @@ class Timetable:
         #if we dont have both dates we get them
         if any((val == None for val in [start,end])):
             self.start,self.end,self.currentDay = self.getDates()
-    
+ 
     def getDates(self):
-        import datetime 
-
         ##get current day, current weekday int, store current day
         startDate = datetime.date.today()
         start = datetime.date.today().weekday()
@@ -304,8 +302,8 @@ class Timetable:
                 params=params
         )
 
-        #with open('dev/newTT.json','w') as f:
-        #    f.write(ttResponse.text)
+        with open('dev/newTT.json','w') as f:
+            f.write(ttResponse.text)
 
         ##filter data
         days = [ [],[],[],[],[] ]
@@ -318,10 +316,24 @@ class Timetable:
                 continue
 
             startdate = lesson['KezdetIdopont']
+
+            # get date info as string
             date = startdate.split('T')[0]
-            start = ':'.join(startdate.split('T')[1][:-1].split(':')[:-1])
-            end = ':'.join(lesson['VegIdopont'].split('T')[1][:-1].split(':')[:-1])
+            startStr = ':'.join(startdate.split('T')[1][:-1].split(':')[:-1])
+            endStr = ':'.join(lesson['VegIdopont'].split('T')[1][:-1].split(':')[:-1])
+            
+            # convert it to local time
+            ## get datetime objects
+            start = datetime.datetime.strptime(startStr,"%H:%M") 
+            end = datetime.datetime.strptime(endStr,"%H:%M") 
+            ## do the conversion
+            startDT = self.convertToLocal(start)
+            endDT = self.convertToLocal(end)
  
+            # convert back to string
+            start = startDT.strftime("%H:%M")
+            end = endDT.strftime("%H:%M")
+
             if not lesson['Tantargy']:
                 subject = None
             else:
@@ -368,3 +380,7 @@ class Timetable:
         #return if current is between start&end and the days match
         return (True if (start < current < end and currentDay == self.currentDay) else False)
 
+    def convertToLocal(self,dt):
+        now = timeModule.time()
+        offset = datetime.datetime.fromtimestamp(now) - datetime.datetime.utcfromtimestamp(now)
+        return dt + offset

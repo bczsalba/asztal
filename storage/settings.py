@@ -21,7 +21,7 @@
 #
 #. animation : ['classic','scrolling']-['classic','scrolling']-'animation method'
 
-debug = "True"
+debug = "False"
 subSorter = "time"
 gradeSorter = "time"
 colorMode = "grade"
