@@ -302,8 +302,8 @@ class Timetable:
                 params=params
         )
 
-        with open('dev/newTT.json','w') as f:
-            f.write(ttResponse.text)
+        #with open('dev/newTT.json','w') as f:
+        #    f.write(ttResponse.text)
 
         ##filter data
         days = [ [],[],[],[],[] ]
