@@ -6,6 +6,8 @@ import sys,json,os,datetime,subprocess,shutil,time
 curdir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0,os.path.join(curdir,'storage'))
 
+debug = 0
+
 #clear log file
 open(os.path.join(curdir,'log'),'w').close
 
@@ -19,19 +21,18 @@ def refresh():
 #======================init=========================
 
 #import settings, create file if failed
-try: from settings import debug
+try: from settings import subSorter
 except Exception as e:
-    print(str(e))
 
     backups = os.listdir(curdir+'/backups/')
     if 'settings_backup' in backups:
         shutil.copyfile('backups/settings_default','storage/settings.py')
         time.sleep(0.1)
-        from settings import debug 
+        #from settings import debug 
     elif 'settings_default' in backups:
         shutil.copyfile('backups/settings_default','storage/settings.py')
         time.sleep(0.1)
-        from settings import debug
+        #from settings import debug
     
     else:
         print('No settings.py in directory and no default_settings found.\n Check log for info.')
@@ -58,9 +59,10 @@ try:
 except:
     vrs = 0.0
 
+
 #======================main==========================
 
-if __name__ == '__main__':
+def start(args,_input=None):
     import ui
     from ui import createUser,editUser,listUsers,tWidth,tHeight,dbg,clr
     from api import Student
@@ -70,8 +72,8 @@ if __name__ == '__main__':
     ##initialize student object based on offline mode
     offline = False
     offset = 0
-    if len(sys.argv) > 1:
-        for a in sys.argv:
+    if len(args) > 1:
+        for a in args:
             if a == '-o':
                 offline = True
             elif '--offset' in a:
@@ -157,9 +159,9 @@ if __name__ == '__main__':
 
     ##start ui based on shortcut
     shortcut = None
-    if len(sys.argv) > 1:
+    if len(args) > 1:
         #shortcuts: [grades,recents,timetable,profiles,settings]
-        opt = sys.argv[1]
+        opt = args[1]
         options = ['m','r','t','p','s']
         shortcuts = [str(i) for i in range(len(options))]
         
@@ -169,4 +171,7 @@ if __name__ == '__main__':
     
     dbg('UI :',time=0)
     mode = ('offline' if user.maci == 'offline' else 'online')
-    ui.start(shortcut=shortcut,_mode=mode,_offset=offset)
+    ui.start(shortcut=shortcut,_debug=debug,_mode=mode,_offset=offset,_input=_input)
+
+if __name__ == "__main__":
+    start(sys.argv)

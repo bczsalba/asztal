@@ -3,8 +3,6 @@
 #  variable name : options-data-comment-preview_function
 # 
 #
-#. debug : ['on','off']-['True','False']-'Debug mode'
-#
 #. subSorter : ['average','average reversed','time','length']-['getAvg','getAvgR','time','getLen']-'Method to sort subjects'
 #
 #. gradeSorter : ['increasing','decreasing','time']-['inc','dec','time']-'Method to sort grades'
@@ -21,7 +19,6 @@
 #
 #. animation : ['classic','scrolling']-['classic','scrolling']-'animation method'
 
-debug = "False"
 subSorter = "time"
 gradeSorter = "time"
 colorMode = "grade"

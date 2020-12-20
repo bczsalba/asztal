@@ -23,10 +23,10 @@ def onExit(signum,frame):
     dbg('exiting')
     sys.exit()
 
-signal.signal(signal.SIGINT,onExit)
+#signal.signal(signal.SIGINT,onExit)
 
 #importing functions
-from asztal import vrs,curdir
+from asztal import vrs,curdir,debug
 from settings import *
 
 daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday']
@@ -1009,10 +1009,11 @@ def showGrades(noInp=False,inp=None):
             tprint(padded(printBetween(line,_len=borderLen,noPrint=True,_char=cmod['bold']+'|'+cmod['reset'])))
 
         # print bottom border
-        tprint(padded(cmod['bold']+((borderLen-1)*'-'))+cmod['reset']+'\n')
+        tprint(padded(cmod['bold']+((borderLen-1)*'-'))+cmod['reset'])
+        tprint('\n')
 
         hintLines = hints.split('\n')
-        padBottom()
+        padBottom(offset=1)
         tprint(f'\033[{2+len(hintLines)}A')
         
         # print hints
@@ -1042,7 +1043,8 @@ def showGrades(noInp=False,inp=None):
                 inp = choice
          
         ## input
-        if not 'inp' in locals(): inp = qInp('')
+        if not 'inp' in locals(): 
+            inp = qInp('')
         valid = [(h[h.index('-')+1] if '-' in h else h[0]) for h in options]
         dbg(valid)
         if inp.lower() in valid:
@@ -1356,7 +1358,7 @@ def showSettings():
                 globals()[name] = val
 
         # refresh dbg in asztal since clr operates on it
-        refresh()
+        #refresh()
         globals()['colors'] = getColors()
         dbg('writeSettings successful.')        
 
@@ -2086,9 +2088,14 @@ def goBack(layer=0,_inp=None):
         goBack(layer)
 
 #start method
-def start(_mode='online',_debug=0,shortcut=None,_offset=0):
+def start(_mode='online',_debug=0,shortcut=None,_offset=0,_input=None):
     global dbg,mode,path,user,name,marks,subjectsList,timetable,titleArt
     global offset,tWidth,border
+
+    if callable(_input):
+        global qInp
+        qInp = _input
+
     debug,mode = _debug,_mode
     
     offset = _offset
