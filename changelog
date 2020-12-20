@@ -1,4 +1,5 @@
-1.22:
-- fixed things in grades
-- improved input system
-- timetable now uses local time
+1.23:
+- added support for Teahaz integration
+- added getch file to replace input
+- added arrow/hjkl navigation to timetable
+- fixed a bug with non-existant midterm grades being compared
