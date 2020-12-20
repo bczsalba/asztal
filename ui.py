@@ -13,6 +13,7 @@ import shutil
 import requests
 import datetime
 import subprocess
+from getch import getch
 from getpass import getpass
 
 #used for log file
@@ -96,10 +97,13 @@ def dbg(*args,f=0,time=1,show=1):
             for d in repr(info).split('\n'):
                 log.write(f'{time_format}: {d}\n')
 
+# get getch input, convert it
 def qInp(s=''):
-    out = input(s+cursorUp)
-    print(silence)
-    return out
+    key = getch()
+    if key == 'ENTER':
+        key = ''
+    dbg("input:",key)
+    return key
 
 #printing with delay of animTime
 def tprint(*args,**kwargs):
@@ -416,7 +420,6 @@ def showTimetable(_day=None,_lesson=None):
     clr()
     dbg('showTimetable called with '+str(_day)+' '+str(_lesson))
     import datetime
-    from settings import ttdefault
 
     ## get closest weekday to d
     def getClosestDay(d=None):
@@ -544,12 +547,14 @@ def showTimetable(_day=None,_lesson=None):
    
     # hint bar
     resetHint = underline('reset',0,colors[1])
-    if ttdefault == 'l':
-        lessonHint = colors[4]+cmod['bold']+'num: change lesson'+cmod['reset']
-        dayHint = underline('d+num: change to day',17,colors[3]+cmod['bold'])
-    else:
-        dayHint = colors[3]+cmod['bold']+'num: change to day'+cmod['reset']
-        lessonHint = underline('l+num: change to lesson',17,colors[4]+cmod['bold'])
+    #if ttdefault == 'l':
+    #    lessonHint = colors[4]+cmod['bold']+'num: change lesson'+cmod['reset']
+    #    dayHint = underline('d+num: change to day',17,colors[3]+cmod['bold'])
+    #else:
+    #    dayHint = colors[3]+cmod['bold']+'num: change to day'+cmod['reset']
+    #    lessonHint = underline('l+num: change to lesson',17,colors[4]+cmod['bold'])
+    dayHint = colors[3]+cmod['bold']+'left-right: cycle between days'
+    lessonHint = colors[4]+cmod['bold']+'num: change to lesson'
     
     hints = [resetHint,lessonHint,dayHint]
     for i,h in enumerate(hints):
@@ -586,39 +591,22 @@ def showTimetable(_day=None,_lesson=None):
     
     ## input
     # formatting input to always start with l/d
-    inp = ''.join(qInp('').rstrip().split(' '))
+    inp = qInp()
+    selectedLesson = lesson
+    selectedDay = day
+
     if inp.isdigit():
-        inp = ttdefault+inp #formatting it to l/d+inp format depending on ttdefault
-    dbg('inp: '+inp)
-
-    # exit
-    if inp == '':
-        showTitle()
+        selectedLesson = int(inp)
     else:
-        # handle input
-        if not inp[0] in ['d','l','r']:
-            showTimetable()
+        if inp in ["ARROW_LEFT",'h']:
+            selectedDay = day - 1
+        elif inp in ["ARROW_RIGHT",'l']:
+            selectedDay = day + 1
         else:
-            dbg(f'current: l{lesson} | d{day}')
-            if inp[0] == 'd':
-                try:
-                    selectedDay = int(inp[1:])-1
-                    selectedLesson = lesson
-                except Exception as e:
-                    dbg(str(e))
-                    showTimetable()
-                    
-            elif inp[0] == 'l':
-                try:
-                    selectedLesson = int(inp[1:])
-                    selectedDay = day
-                except Exception as e:
-                    dbg(str(e))
-                    showTimetable()
-            else:
-                showTimetable()
+            showTitle()
 
-            showTimetable(selectedDay,selectedLesson)
+    showTimetable(selectedDay,selectedLesson)
+
 
 #main displayer function
 def showGrades(noInp=False,inp=None):
