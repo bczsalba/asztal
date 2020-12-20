@@ -32,6 +32,7 @@ from settings import *
 daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday']
 cursorUp = '\033[1A'
 silence = '\033[1A'+'\033[K'
+offset = 20
 
 #color
 def getColors():
@@ -69,7 +70,8 @@ def clr(f=0):
     global printedLines
 
     printedLines = 0
-    if animation == 'scrolling' and debug == 'False' and not f: return
+    if animation == 'scrolling' and debug == 'False' and not f: 
+        return
 
     if not debug == 'True' or f == 1:
         os.system('cls' if os.name == 'nt' else 'clear')
@@ -108,7 +110,8 @@ def tprint(*args,**kwargs):
         lines += a.count('\n')
 
     printedLines += lines+len(args)
-    print(*args,**kwargs)
+    y = (tHeight+1 if animation == "scrolling" else printedLines+1)
+    print(f'\033[{y};{offset}H',*args,sep='')
     if not debug == 'True' and animTime: time.sleep(animTime*0.001)
 
 #go to x,y with ansi cursor codes
@@ -117,7 +120,7 @@ def goto(x=0,y=0):
 
 #pad bottom to tHeight
 def padBottom(offset=0):
-    for _ in range(tHeight-offset-2-printedLines):
+    for _ in range(tHeight-offset-3-printedLines):
         tprint('\033[K')
 
 #handles function recalling in scrolling mode, so it doesnt reprint and looks all pretty
@@ -141,8 +144,9 @@ try: from settings import tWidth
 except Exception: 
     dbg("No tWidth given, defaulting to dynamic.")
     tWidth,tHeight = os.get_terminal_size()
-
-border = (tWidth//2-1)*'-='+'-'
+    #tWidth -= offset
+    #print(tWidth)
+    #input()
 
 #from https://stackoverflow.com/a/38662876; rid string of ansi sequences
 def clean_ansi(line):
@@ -177,7 +181,9 @@ def breakLine(_inline,_padLen=0,_len=tWidth,_separator=' '):
         return _inline
 
 # pads string to center in _len
-def padded(_str,_len=tWidth-(1 - tWidth%2)):
+def padded(_str,_len=None):
+    if _len == None:
+        _len = tWidth-(1 - tWidth%2)
     mult = round( (_len-len(clean_ansi(_str)))/2 )
     pad = mult*' '
     return pad+_str
@@ -214,8 +220,10 @@ def spaceHint(hints,spacer=' '):
         maxLen = max([len(clean_ansi(h)) for h in hints])
         return '\n'.join([int((tWidth-maxLen)/2)*' '+h for h in hints])    
 
-def printBetween(s,_len=len(border),_char='|',_pad=1,_offset=0,noPrint=False):
+def printBetween(s,_len=None,_char='|',_pad=1,_offset=0,noPrint=False):
     stringLength = len(clean_ansi(s))
+    if _len == None:
+        _len = len(border)
     #evenOddPad = (0 if (_len-stringLength) % 2 == 0 else -1)
     #dbg('evenOddPad:',evenOddPad)
     evenOddPad = 0 # TODO
@@ -568,7 +576,8 @@ def showTimetable(_day=None,_lesson=None):
     
     for h in hints.split('\n'):
         tprint('\033[K'+h)
-    tprint('\n\n'+border)
+    tprint('\n')
+    tprint(border)
     padBottom()
 
 
@@ -688,7 +697,8 @@ def showGrades(noInp=False,inp=None):
 
         
         ###printing
-        tprint('\n\n',padded(subStr))
+        tprint('\n')
+        tprint(padded(subStr))
         tprint(border)
         for l in gradesFormatted.split('\n'):
             printBetween(l)
@@ -823,7 +833,9 @@ def showGrades(noInp=False,inp=None):
         _avg = col+getAvg(choice,_ret='str')+cmod['reset'] #avg value
         
         #top border
-        tprint('\n'+padded(cmod['bold']+f' {choice}: {_avg}'+cmod['reset'])+'\n'+border)
+        tprint('\n\n')
+        tprint(padded(cmod['bold']+f' {choice}: {_avg}'+cmod['reset']))
+        tprint(border)
             
         for li,l in enumerate(lines):
             cl = breakLine(l,len(clean_ansi(f'{lines[li].split(":")[0]}  ')),tWidth-5,' ',)
@@ -835,7 +847,8 @@ def showGrades(noInp=False,inp=None):
 
         #bottom border
         tprint(border)
-        tprint('\n'+padded(makeHint('simulate',colors[4])))
+        tprint('\n')
+        tprint(padded(makeHint('simulate',colors[4])))
         padBottom()
         
         #exit
@@ -1129,7 +1142,8 @@ def showGrades(noInp=False,inp=None):
     dbg(f'SubJlist contains {len(subjectsList)} elements.')
     
     #top border
-    tprint('\n\n\n'+cmod['bold']+'asztal'.center(tWidth-3)+cmod['reset'])
+    tprint('\n\n\n')
+    tprint(cmod['bold']+'asztal'.center(tWidth-3)+cmod['reset'])
     tprint(border)
 
     if not len(subjectsList):
@@ -1670,9 +1684,9 @@ def showProfiles():
         name = (choice['name'] if prettyUser == 'True' and 'name' in choice.keys() else choice['usr'])
         
         
-        print(padded(cmod['bold']+int(tWidth/2)*'-'+cmod['reset']))
-        print(cmod['bold']+padded(printBetween('Are you sure you want to delete '+colors[1]+name+cmod['reset']+cmod['bold']+'? Y[n]',_len=int(tWidth/2),noPrint=True))+cmod['reset'])
-        print(padded(cmod['bold']+int(tWidth/2)*'-'+cmod['reset']))
+        tprint(padded(cmod['bold']+int(tWidth/2)*'-'+cmod['reset']))
+        tprint(cmod['bold']+padded(printBetween('Are you sure you want to delete '+colors[1]+name+cmod['reset']+cmod['bold']+'? Y[n]',_len=int(tWidth/2),noPrint=True))+cmod['reset'])
+        tprint(padded(cmod['bold']+int(tWidth/2)*'-'+cmod['reset']))
         #print(padded(f'Are you sure you want to delete {colors[1]}{name}{cmod['reset']}{cmod['bold']}? Y[n] '+cmod['reset'])+'\n\n\n\n\n\n'+border+'\n')
         padBottom()
         if qInp('').lower() == 'y':
@@ -2054,9 +2068,15 @@ def goBack(layer=0,_inp=None):
         goBack(layer)
 
 #start method
-def start(_mode='online',_debug=0,shortcut=None):
+def start(_mode='online',_debug=0,shortcut=None,_offset=0):
     global dbg,mode,path,user,name,marks,subjectsList,timetable,titleArt
+    global offset,tWidth,border
     debug,mode = _debug,_mode
+    
+    offset = _offset
+    tWidth -= offset
+    border = (tWidth//2-1)*'-='+'-'
+
 
     
     try:

@@ -68,10 +68,17 @@ if __name__ == '__main__':
 
     
     ##initialize student object based on offline mode
-    if len(sys.argv) > 1 and 'o' in sys.argv[1]:
-        offline = True
-    else:
-        offline = False
+    offline = False
+    offset = 0
+    if len(sys.argv) > 1:
+        for a in sys.argv:
+            if a == '-o':
+                offline = True
+            elif '--offset' in a:
+                off = a.replace('--offset=','')
+                if off.isdigit():
+                    offset = int(off)
+
     
     clr()
     dbg('INIT :',time=0)
@@ -162,4 +169,4 @@ if __name__ == '__main__':
     
     dbg('UI :',time=0)
     mode = ('offline' if user.maci == 'offline' else 'online')
-    ui.start(shortcut=shortcut,_mode=mode)
+    ui.start(shortcut=shortcut,_mode=mode,_offset=offset)
