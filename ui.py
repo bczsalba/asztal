@@ -547,12 +547,6 @@ def showTimetable(_day=None,_lesson=None):
    
     # hint bar
     resetHint = underline('reset',0,colors[1])
-    #if ttdefault == 'l':
-    #    lessonHint = colors[4]+cmod['bold']+'num: change lesson'+cmod['reset']
-    #    dayHint = underline('d+num: change to day',17,colors[3]+cmod['bold'])
-    #else:
-    #    dayHint = colors[3]+cmod['bold']+'num: change to day'+cmod['reset']
-    #    lessonHint = underline('l+num: change to lesson',17,colors[4]+cmod['bold'])
     dayHint = colors[3]+cmod['bold']+'left-right: cycle between days'
     lessonHint = colors[4]+cmod['bold']+'num: change to lesson'
     
@@ -587,8 +581,6 @@ def showTimetable(_day=None,_lesson=None):
     tprint(border)
     padBottom()
 
-
-    
     ## input
     # formatting input to always start with l/d
     inp = qInp()
@@ -599,9 +591,17 @@ def showTimetable(_day=None,_lesson=None):
         selectedLesson = int(inp)
     else:
         if inp in ["ARROW_LEFT",'h']:
-            selectedDay = day - 1
+            selectedDay -= 1
+
         elif inp in ["ARROW_RIGHT",'l']:
-            selectedDay = day + 1
+            selectedDay += 1
+
+        elif inp in ["ARROW_UP","k"]:
+            selectedLesson - 1
+
+        elif inp in ["ARROW_DOWN","j"]:
+            selectedLesson += 1
+
         else:
             showTitle()
 
@@ -900,7 +900,13 @@ def showGrades(noInp=False,inp=None):
             current = (getEnd() if len(getEnd()) > 0 else avgs)
             for (o,n) in zip(getHalf(),current):
                 if n == o:
-                    s = colors[o-1]+str(n)+cmod['reset']+' '
+                    o = clean_ansi(o)
+                    if o.isdigit():
+                        col = colors[int(o)-1]
+                    else:
+                        col = colors[1]
+
+                    s = col+str(n)+cmod['reset']+' '
                     diff.append(s)
                     continue
 
