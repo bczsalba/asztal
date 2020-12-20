@@ -164,7 +164,7 @@ if __name__ == '__main__':
         shortcuts = [str(i) for i in range(len(options))]
         
         for s,o in zip(shortcuts,options):
-            if o in opt:
+            if '-'+o == opt:
                 shortcut = s
     
     dbg('UI :',time=0)

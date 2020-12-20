@@ -570,8 +570,10 @@ def showTimetable(_day=None,_lesson=None):
             cmod['bold']+
             borderIndex*' '+
             (borderLen-len(clean_ansi(dayLegend)))*'-'+
-            dayLegend+'\n\033[K'
+            dayLegend
     )
+
+    tprint('\n\033[K')
     hints = spaceHint(sorted(hints,key=lambda x: len(clean_ansi(x))))
     
     for h in hints.split('\n'):
@@ -1422,7 +1424,9 @@ def showSettings():
     clr()
 
     ## main menu
-    tprint('\n\n'+border+'\n\n')
+    tprint('\n')
+    tprint(border)
+    tprint('\n')
     borderLen = 35
     menuBorder = cmod['bold']+('settings'+(borderLen-len('settings'))*'-').center(tWidth)+cmod['reset']
     menuBorderIndex = clean_ansi(menuBorder).index('s')
@@ -1455,9 +1459,11 @@ def showSettings():
         right = midPadding*' '+f'{selected}{cmod["reset"]}'+' |'
         tprint(left+right)
     
-    tprint(cmod['bold']+(borderLen*'-').center(tWidth)+cmod['reset']+'\n')
+    tprint(cmod['bold']+(borderLen*'-').center(tWidth)+cmod['reset'])
+    tprint('\n')
     tprint(hint)
-    tprint('\n\n'+border)
+    tprint('\n')
+    tprint(border)
     padBottom()
     
     nameInp = qInp('').strip()
@@ -1500,7 +1506,9 @@ def showSettings():
 
     ## submenu
     clr()
-    tprint('\n\n'+border+'\n\n')
+    tprint('\n')
+    tprint(border)
+    tprint('\n')
     inputType = ('input' in options[nameIndex])
     subBorderLen = (len(comments[nameIndex])+10 if inputType else borderLen)
     subMenuBorder = cmod['bold']+(name+(subBorderLen-len(name))*'-').center(tWidth)+cmod['reset']
@@ -1539,7 +1547,9 @@ def showSettings():
     
     tprint(cmod['bold']+((subBorderLen)*'-').center(tWidth)+cmod['reset']+'\n')
     
-    tprint('\n\n\n'+downPadding*'\n'+border+'\n')
+    tprint('\n\n'+downPadding*'\n')
+    tprint(border)
+    tprint('\n')
     padBottom()
     
     choice = qInp('')
@@ -1602,13 +1612,16 @@ def showProfiles():
     dbg(options)
     hints = spaceHint(options)
     
-    tprint('\n\n'+border+'\n\n')
+    tprint('\n')
+    tprint(border)
+    tprint('\n')
     listUsers(noInp=1,showIndex=1,showDefault=True,showDash=True,old=oldUsr)
 
     tprint('')
     for hint in hints.split('\n'):
         tprint(hint)
-    tprint('\n\n'+border)
+    tprint('\n')
+    tprint(border)
     padBottom()
     
     #get input
@@ -1741,7 +1754,9 @@ def showUpdate():
     newVersion = float(newLog[0][:-1])
     changelog = '\n'.join(newLog[1:]).split('\n')
 
-    tprint('\n\n'+border+'\n\n')
+    tprint('\n')
+    tprint(border)
+    tprint('\n')
 
     ## first box
     modOffset = 1-tWidth % 2
@@ -1813,7 +1828,8 @@ def showUpdate():
     
     # -----------
     bottomBorder = '-'*(borderLen)
-    tprint(cmod['bold']+bottomBorder.center(tWidth)+cmod['reset']+'\n')
+    tprint(cmod['bold']+bottomBorder.center(tWidth)+cmod['reset'])
+    tprint('\n')
 
 
     # logic
@@ -1826,7 +1842,9 @@ def showUpdate():
         tprint(padded(h))
     
     # bottom
-    tprint('\n\n'+border+'\n')
+    tprint('\n')
+    tprint(border)
+    tprint('\n')
     padBottom()
 
     inputOptions = (['update'] if canUpdate else ['reinstall'])
