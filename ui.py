@@ -547,7 +547,7 @@ def showTimetable(_day=None,_lesson=None):
    
     # hint bar
     resetHint = underline('reset',0,colors[1])
-    dayHint = colors[3]+cmod['bold']+'left-right: cycle between days'
+    dayHint = colors[3]+cmod['bold']+'left-right/up-down: cycle selection'
     lessonHint = colors[4]+cmod['bold']+'num: change to lesson'
     
     hints = [resetHint,lessonHint,dayHint]
@@ -597,7 +597,7 @@ def showTimetable(_day=None,_lesson=None):
             selectedDay += 1
 
         elif inp in ["ARROW_UP","k"]:
-            selectedLesson - 1
+            selectedLesson -= 1
 
         elif inp in ["ARROW_DOWN","j"]:
             selectedLesson += 1
