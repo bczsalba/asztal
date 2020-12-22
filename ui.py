@@ -476,8 +476,6 @@ def showTimetable(_day=None,_lesson=None):
         lesson = _lesson
     else:
         current = datetime.datetime.now()
-        #current = datetime.datetime.strptime('2020-06-04 11:21:00','%Y-%m-%d %H:%M:%S')
-        #dbg(current)
 
         ## if we're looking at today show the ongoing/closest lesson
         if not today == day:
@@ -1228,9 +1226,8 @@ def showGrades(noInp=False,inp=None):
     tprint(border)
     
     hints = [
-                makeHint('num/name for info',colors[4],noUnderline=True),
-                makeHint('num+s+[..] for simulate',colors[3],noUnderline=True),
-                makeHint('overall menu',colors[1])
+            makeHint('num: info',colors[4],noUnderline=True),
+            makeHint('o: overall menu',colors[1])
             ]
     tprint()
     
@@ -1836,8 +1833,8 @@ def showUpdate():
     canUpdate = vrs < newVersion
 
     # hints
-    hint = ('update' if canUpdate else 'reinstall')
-    hintLine = makeHint(hint,colors[4])
+    hint = ('`git pull` to update/reinstall')
+    hintLine = makeHint(hint,colors[4],noUnderline=True)
     for h in hintLine.split('\n'):
         tprint(padded(h))
     
@@ -1846,23 +1843,6 @@ def showUpdate():
     tprint(border)
     tprint('\n')
     padBottom()
-
-    inputOptions = (['update'] if canUpdate else ['reinstall'])
-    col = colors[1]
-
-    # input
-    confirmation = approximateInput(input(),inputOptions)
-    if confirmation:
-        clr()
-        if canUpdate: 
-            output = subprocess.check_output('git pull',shell=True).decode('utf-8')
-            print('Update complete.'.center(tWidth))
-        else:
-            output = subprocess.check_output('git reset --hard HEAD',shell=True).decode('utf-8')
-            print('Reinstall complete.'.center(tWidth))
-        sys.exit()
-    else:
-        showTitle()
 
 #==========================profile functions===========================
 # these need to be outside of showProfiles so that asztal.py has access
