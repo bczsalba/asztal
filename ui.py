@@ -98,12 +98,16 @@ def dbg(*args,f=0,time=1,show=1):
                 log.write(f'{time_format}: {d}\n')
 
 # get getch input, convert it
-def qInp(s=''):
-    key = getch()
-    if key == 'ENTER':
-        key = ''
-    dbg("input:",key)
-    return key
+def qInp(s='',length=1):
+    buff = []
+    while len(buff) < length:
+        key = getch()
+        if key == 'ENTER':
+            key = ''
+        buff.append(key)
+
+    dbg("input:",buff)
+    return ''.join(buff)
 
 #printing with delay of animTime
 def tprint(*args,**kwargs):
@@ -1226,8 +1230,8 @@ def showGrades(noInp=False,inp=None):
     tprint(border)
     
     hints = [
-            makeHint('num: info',colors[4],noUnderline=True),
-            makeHint('o: overall menu',colors[1])
+            makeHint('num: info',colors[4],noUnderline=1),
+            makeHint('mo: overall menu',colors[1],noUnderline=1)
             ]
     tprint()
     
@@ -1239,9 +1243,8 @@ def showGrades(noInp=False,inp=None):
         for h in hintLines:
             tprint(h) 
 
-    if not noInp:
-        inp = qInp('')
-        if inp.lower() == 'o':
+        inp = qInp('',length=2)
+        if inp.lower() == 'mo':
             menuOverall()
         
         elif not inp == '':
