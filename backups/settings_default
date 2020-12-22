@@ -26,4 +26,4 @@ customColors = "True"
 ttdefault = "l"
 prettyUser = "True"
 animTime = 3
-animation = "scrolling"
+animation = "classic"
