@@ -245,7 +245,7 @@ def approximateInput(inp,lst,index=False):
 
     for e in lst:
         for i in range(len(e)+1):
-            if inp == e[:i].lower():
+            if inp.lower() == e[:i].lower():
                 i = lst.index(e)
                 if index:
                     return i
@@ -264,7 +264,7 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
         mode = 'offline'
     modeStr = ('' if mode == 'online' else f'({mode})')
 
-    items = [name,f'v{vrs} {modeStr}','grades','recents','timetable','profiles','settings','update']
+    items = [name,f'v{vrs} {modeStr}','grades','recents','timetable','profiles','settings','update','quit']
 
     # sleep well lil guy
     def wobbly():
@@ -329,6 +329,9 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
                 return False
        
         if choice:
+            if choice == "quit":
+                sys.exit()
+
             try:
                 fun = globals()['show'+choice.title()]
             except KeyError:
@@ -493,6 +496,7 @@ def showTimetable(_day=None,_lesson=None):
         line = 'Looks like your day is empty!'
 
         lines = ['',cmod['bold']+line+cmod['reset'],'']
+        lesson = 0
 
     ## printing
     # body lines
