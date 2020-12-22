@@ -1231,7 +1231,7 @@ def showGrades(noInp=False,inp=None):
     
     hints = [
             makeHint('num: info',colors[4],noUnderline=1),
-            makeHint('mo: overall menu',colors[1],noUnderline=1)
+            makeHint('o: overall menu',colors[1],noUnderline=1)
             ]
     tprint()
     
@@ -1243,11 +1243,13 @@ def showGrades(noInp=False,inp=None):
         for h in hintLines:
             tprint(h) 
 
-        inp = qInp('',length=2)
-        if inp.lower() == 'mo':
+        inp = qInp('')
+        if inp.lower() == 'o':
             menuOverall()
         
         elif not inp == '':
+            # get second character
+            inp += qInp()
             if not inp.isdigit():
                 inp = approximateInput(inp,sublist,index=True)
                
