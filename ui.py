@@ -353,9 +353,13 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
 
     if not 'titleArt' in globals():
         ## show birthday sprite
+        date = str(datetime.datetime.today().date())
         if bday:
             from title_art import bday
             titleArt = bday
+        elif any(date.endswith('-12-2'+o) for o in '456'):
+            from title_art import xmas
+            titleArt = xmas
         else:
             titleArt = getTitleArt()
     
@@ -612,7 +616,6 @@ def showTimetable(_day=None,_lesson=None):
             showTitle()
 
     showTimetable(selectedDay,selectedLesson)
-
 
 #main displayer function
 def showGrades(noInp=False,inp=None):
