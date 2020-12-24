@@ -67,6 +67,7 @@ xmas = '''
  /|||\  
 *-----* 
 o..|..o.
+merry christmas!
 '''
 
 wobbly = ['''
