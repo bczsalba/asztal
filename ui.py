@@ -1816,7 +1816,7 @@ def showUpdate():
 
     # | <>:    ..|
     newest = 'newest:'
-    newest += (borderLen-len(newest)-len(clean_ansi(newest))-1)*' '
+    newest += (borderLen-len(newest)-len(clean_ansi(newest)))*' '
     newest += newVrs+' '
     tprint(cmod['bold']+padded(printBetween(newest,_len=borderLen+1,noPrint=1,_char=_char+cmod['reset'])))
     
