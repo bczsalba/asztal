@@ -110,22 +110,35 @@ def qInp(s='',length=1):
     return ''.join(buff)
 
 #printing with delay of animTime
-def tprint(*args,empty=False,**kwargs):
+def tprint(*args,empty=False,sleep=None,**kwargs):
     global printedLines
     
+    # get count for adding lines
     lines = 0
-    #empty = False
     for a in args:
-        #if a == "\033[K":
-        #    empty = True
         lines += a.count('\n')
 
+    # add lines
     printedLines += lines+len(args)
+
+    # get y value
     y = (tHeight+1 if animation == "scrolling" else printedLines+1)
+
+    # print
     print(f'\033[{y};{offset}H',*args,sep='')
+
+    # get sleep value if needed
+    if sleep == None:
+        sleep = animTime*0.005
+
+    # set anim specific values
+    if animation == 'scrolling':
+        empty = False
+        sleep /= 3
     
-    if not debug == 'True' and animTime and not empty: 
-        time.sleep(animTime*0.005)
+    # sleep
+    if not empty: 
+        time.sleep(sleep)
 
 #go to x,y with ansi cursor codes
 def goto(x=0,y=0):
@@ -133,7 +146,7 @@ def goto(x=0,y=0):
 
 #pad bottom to tHeight
 def padBottom(offset=0):
-    for _ in range(tHeight-offset-3-printedLines):
+    for _ in range(tHeight-offset-3-printedLines+(2 if animation == 'scrolling' else 0)):
         tprint('\033[K',empty=True)
 
 #handles function recalling in scrolling mode, so it doesnt reprint and looks all pretty
@@ -1277,6 +1290,7 @@ def showGrades(noInp=False,inp=None):
 
 #recents display function
 def showRecents(): 
+    sleep = 0.0015
     if not len(marks):
         tprint('\n\n\n\n'+border+padded('|'))
         l = "No grades available."
@@ -1315,24 +1329,24 @@ def showRecents():
         maxLen = max(len(clean_ansi(l)) for l in lines)
 
         # top border
-        tprint(padded(index+(maxLen+4-len(index))*'-'))
+        tprint(padded(index+(maxLen+4-len(index))*'-'),sleep=sleep)
 
         # lines
         for l in lines:
-            tprint(padded(printBetween(l,_len=maxLen+5,noPrint=True)))
+            tprint(padded(printBetween(l,_len=maxLen+5,noPrint=True)),sleep=sleep)
         
         # bottom border
         bborder = padded((maxLen+4)*'-')
-        tprint(bborder)
+        tprint(bborder,sleep=sleep)
         
         # connecting lines
         if not i == len(marks)-1: 
             centerLen = random.randint(len(index)+6,maxLen)
             offset = random.randint(maxLen-15,maxLen+15)
             for _ in range(2):
-                tprint(padded('||',_len=6+tWidth-offset/4))
+                tprint(padded('||',_len=6+tWidth-offset/4),sleep=0.002)
         
-        time.sleep(animTime*0.0005)
+        #time.sleep(animTime*0.0005)
     padBottom()
 
 #settings menu
