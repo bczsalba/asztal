@@ -1045,7 +1045,12 @@ def showGrades(noInp=False,inp=None):
         
         # edit input section
         if mode == 'edit':
-            choice = qInp('')
+            choice = qInp()
+            if choice.isdigit():
+                choice += qInp()
+            else:
+                menuOverall(_mode='edit')
+
             if choice == '':
                 menuOverall()
 
@@ -1053,26 +1058,28 @@ def showGrades(noInp=False,inp=None):
                 sub = subjects[int(choice)]
                 old = grades[int(choice)]
                 clr(f=1)
-                #new = input('\n\n'+cmod['bold']+sub+': '+colors[old-1]+str(old)+cmod['reset']+cmod['bold']+' -> '+colors[4])
                 tprint('\n\n')
-                tprint(padded(cmod['bold']+sub+': '+colors[old-1]+str(old)+cmod['bold']+' -> '+colors[4]))
+                tprint(padded(cmod['bold']+sub+': '+colors[old-1]+str(old)+cmod['reset']+cmod['bold']+' -> '+colors[4]+cmod['reset']))
+                padBottom()
                 new = qInp()
-                tprint(cmod['reset'])
                 clr(f=1)
+
                 if new.isdigit() and int(new) in range(1,6):
                     grades[int(choice)] = int(new)
                     if not '* ' in sub:
                         subjects[int(choice)] = '* '+sub
                     menuOverall(_grades=grades,_subjects=subjects)
+                else:
+                    menuOverall(_grades=grades,_subjects=subjects)
     
             else:
-                inp = choice
+                menuOverall()
          
         ## input
         if not 'inp' in locals(): 
             inp = qInp('')
+
         valid = [(h[h.index('-')+1] if '-' in h else h[0]) for h in options]
-        dbg(valid)
         if inp.lower() in valid:
             modes = [h.split(' ')[0] for h in options]
             vIndex = valid.index(inp.lower())
@@ -1536,8 +1543,10 @@ def showSettings():
     ## submenu
     clr()
     tprint('\n')
-    tprint(border)
     tprint('\n')
+    tprint('\n')
+    tprint('\n')
+
     inputType = ('input' in options[nameIndex])
     subBorderLen = (len(comments[nameIndex])+10 if inputType else borderLen)
     subMenuBorder = cmod['bold']+(name+(subBorderLen-len(name))*'-').center(tWidth)+cmod['reset']
@@ -1576,9 +1585,6 @@ def showSettings():
     
     tprint(cmod['bold']+((subBorderLen)*'-').center(tWidth)+cmod['reset']+'\n')
     
-    tprint('\n\n'+downPadding*'\n')
-    tprint(border)
-    tprint('\n')
     padBottom()
     
     choice = qInp('')
