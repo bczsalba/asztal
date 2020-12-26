@@ -110,17 +110,22 @@ def qInp(s='',length=1):
     return ''.join(buff)
 
 #printing with delay of animTime
-def tprint(*args,**kwargs):
+def tprint(*args,empty=False,**kwargs):
     global printedLines
     
     lines = 0
+    #empty = False
     for a in args:
+        #if a == "\033[K":
+        #    empty = True
         lines += a.count('\n')
 
     printedLines += lines+len(args)
     y = (tHeight+1 if animation == "scrolling" else printedLines+1)
     print(f'\033[{y};{offset}H',*args,sep='')
-    if not debug == 'True' and animTime: time.sleep(animTime*0.001)
+    
+    if not debug == 'True' and animTime and not empty: 
+        time.sleep(animTime*0.005)
 
 #go to x,y with ansi cursor codes
 def goto(x=0,y=0):
@@ -129,7 +134,7 @@ def goto(x=0,y=0):
 #pad bottom to tHeight
 def padBottom(offset=0):
     for _ in range(tHeight-offset-3-printedLines):
-        tprint('\033[K')
+        tprint('\033[K',empty=True)
 
 #handles function recalling in scrolling mode, so it doesnt reprint and looks all pretty
 def handleRecall():
@@ -334,6 +339,7 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
        
         if choice:
             if choice == "quit":
+                print('\033[?25h')
                 sys.exit()
 
             try:
@@ -1029,11 +1035,15 @@ def showGrades(noInp=False,inp=None):
             choice = qInp('')
             if choice == '':
                 menuOverall()
+
             elif choice.isdigit() and int(choice) in range(len(subjects)):
                 sub = subjects[int(choice)]
                 old = grades[int(choice)]
                 clr(f=1)
-                new = input('\n\n'+cmod['bold']+sub+': '+colors[old-1]+str(old)+cmod['reset']+cmod['bold']+' -> '+colors[4])
+                #new = input('\n\n'+cmod['bold']+sub+': '+colors[old-1]+str(old)+cmod['reset']+cmod['bold']+' -> '+colors[4])
+                tprint('\n\n')
+                tprint(padded(cmod['bold']+sub+': '+colors[old-1]+str(old)+cmod['bold']+' -> '+colors[4]))
+                new = qInp()
                 tprint(cmod['reset'])
                 clr(f=1)
                 if new.isdigit() and int(new) in range(1,6):

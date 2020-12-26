@@ -67,6 +67,7 @@ def start(args,_input=None):
     from ui import createUser,editUser,listUsers,tWidth,tHeight,dbg,clr
     from api import Student
     clr(1)
+    print('\033[?25l')
 
     
     ##initialize student object based on offline mode
