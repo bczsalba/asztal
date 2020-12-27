@@ -254,7 +254,7 @@ def spaceHint(hints,spacer=' '):
         maxLen = max([len(clean_ansi(h)) for h in hints])
         return '\n'.join([int((tWidth-maxLen)/2)*' '+h for h in hints])    
 
-def printBetween(s,_len=None,_char='|',_pad=1,_offset=0,noPrint=False,_animation=None,_eoPad=False):
+def printBetween(s,_len=None,_char='|',_pad=1,_offset=0,noPrint=False,_animation=None,_eoPad=False,empty=False):
     stringLength = len(clean_ansi(s))
     if _len == None:
         _len = len(border)
@@ -265,7 +265,7 @@ def printBetween(s,_len=None,_char='|',_pad=1,_offset=0,noPrint=False,_animation
     if noPrint:
         return retrstr
     else:
-        tprint(retrstr,_animation=_animation)
+        tprint(retrstr,_animation=_animation,empty=empty)
 
 # approximate detection
 def approximateInput(inp,lst,index=False):
@@ -458,6 +458,9 @@ def showTimetable(_day=None,_lesson=None,_animation=None):
     dbg('showTimetable called with '+str(_day)+' '+str(_lesson))
     import datetime
 
+    def tprint_l(s):
+        tprint('\033[K'+s,_animation=_animation,empty=True)
+
     ## get closest weekday to d
     def getClosestDay(d=None):
         '''0:monday, 6: sunday'''
@@ -572,14 +575,14 @@ def showTimetable(_day=None,_lesson=None,_animation=None):
     borderIndex = smolBorder.index(dayStr[0])
 
     # top print
-    tprint('\n',_animation=_animation)
+    tprint('\033[K',_animation=_animation)
     tprint(border,_animation=_animation)
-    tprint('\n',_animation=_animation)
+    tprint('\033[K',_animation=_animation)
     tprint(cmod['bold']+smolBorder+cmod['reset'],_animation=_animation) 
     
     # body print
     for l in lines:
-        printBetween(2*' '+l,_len=borderLen+1,_offset=borderIndex,_char='|\033[K',_animation=_animation)
+        printBetween(2*' '+l,_len=borderLen+1,_offset=borderIndex,_char='|\033[K',_animation=_animation,empty=True)
    
     # hint bar
     resetHint = underline('reset',0,colors[1])
@@ -609,13 +612,13 @@ def showTimetable(_day=None,_lesson=None,_animation=None):
             _animation=_animation
     )
 
-    tprint('\n\033[K',_animation=_animation)
+    tprint('\033[K',_animation=_animation)
     hints = spaceHint(sorted(hints,key=lambda x: len(clean_ansi(x))))
     
     for h in hints.split('\n'):
-        tprint('\033[K'+h,_animation=_animation)
+        tprint(h,_animation=_animation)
 
-    tprint('\n',_animation=_animation)
+    tprint('\033[K',_animation=_animation)
     tprint(border,_animation=_animation)
     padBottom(anim=_animation,offset=1)
 
