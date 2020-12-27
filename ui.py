@@ -583,12 +583,12 @@ def showTimetable(_day=None,_lesson=None,_animation=None):
    
     # hint bar
     resetHint = underline('reset',0,colors[1])
-    dayHint = colors[3]+cmod['bold']+'left-right/up-down: cycle selection'
+    dayHint = colors[3]+cmod['bold']+'←→↑↓: cycle selection'
     lessonHint = colors[4]+cmod['bold']+'num: change to lesson'
     
-    hints = [resetHint,lessonHint,dayHint]
+    hints = [lessonHint,dayHint]
     for i,h in enumerate(hints):
-        hints[i] = cmod['bold']+'[ '+h+cmod['bold']+' ]'+cmod['reset']
+        hints[i] = cmod['bold']+'[ '+h+cmod['bold']+cmod['reset']+cmod['bold']+' ]'
 
 
     # constructing dayLegend
