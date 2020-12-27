@@ -1,4 +1,4 @@
-# :main=./asztal.py
+# :main=./asztal.py -o
 
 #imports
 import os
@@ -13,7 +13,7 @@ import shutil
 import requests
 import datetime
 import subprocess
-from getch import getch
+from getch import getch,break_line,clean_ansi
 from getpass import getpass
 
 #used for log file
@@ -110,8 +110,13 @@ def qInp(s='',length=1):
     return ''.join(buff)
 
 #printing with delay of animTime
-def tprint(*args,empty=False,sleep=None,**kwargs):
+def tprint(*args,empty=False,sleep=None,_animation=None):
     global printedLines
+
+    if _animation == None:
+        anim = animation
+    else:
+        anim = _animation
     
     # get count for adding lines
     lines = 0
@@ -122,17 +127,17 @@ def tprint(*args,empty=False,sleep=None,**kwargs):
     printedLines += lines+len(args)
 
     # get y value
-    y = (tHeight+1 if animation == "scrolling" else printedLines+1)
+    y = (tHeight+1 if anim == "scrolling" else printedLines+1)
 
     # print
-    print(f'\033[{y};{offset}H',*args,sep='')
+    print(f'\033[{y};{offset}H',''.join(args),sep='')
 
     # get sleep value if needed
     if sleep == None:
         sleep = animTime*0.005
 
     # set anim specific values
-    if animation == 'scrolling':
+    if anim == 'scrolling':
         empty = False
         sleep /= 3
     
@@ -145,9 +150,12 @@ def goto(x=0,y=0):
     print(f"\033[{y};{x}H")
 
 #pad bottom to tHeight
-def padBottom(offset=0):
-    for _ in range(tHeight-offset-3-printedLines+(2 if animation == 'scrolling' else 0)):
-        tprint('\033[K',empty=True)
+def padBottom(offset=0,anim=None):
+    if anim == None:
+       anim = animation
+
+    for _ in range(tHeight-offset-2-printedLines):
+        tprint('\033[K',empty=True,_animation=anim)
 
 #handles function recalling in scrolling mode, so it doesnt reprint and looks all pretty
 def handleRecall():
@@ -179,8 +187,8 @@ def clean_ansi(line):
     ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
     return ansi_escape.sub('', line)
 
-#breaks _inline with (\n_padLen*' ')-s if it's longer than _len
-def breakLine(_inline,_padLen=0,_len=tWidth,_separator=' '):
+#breaks _inline with (\n_pad*' ')-s if it's longer than _len
+def break_lineA(_inline,_pad=0,_len=tWidth,_separator=' '):
     if len(clean_ansi(_inline )) > _len:
         _line = '' #line with ansi
         _cline = '' #line without ansi
@@ -196,15 +204,15 @@ def breakLine(_inline,_padLen=0,_len=tWidth,_separator=' '):
             
             elif not any(nl == '' for nl in [l,c]):
                 #adding a newline, padding and the next string to the lines
-                _pad = _padLen*' '
-                _cline += f'{_separator}\n{_pad}{c}'
-                _line += f'{_separator}\n{_pad}{l}'
+                _padS = _pad*' '
+                _cline += f'{_separator}\n{_padS}{c}'
+                _line += f'{_separator}\n{_padS}{l}'
 
         #return (' ' if len(_line.split('\n')) >= 1 else '')+_line
         #return (' ' if len(clean_ansi(_inline)) > tWidth else '') + _line
-        return _line
+        return _line.split('\n')
     else:
-        return _inline
+        return _inline.split('\n')
 
 # pads string to center in _len
 def padded(_str,_len=None):
@@ -246,19 +254,18 @@ def spaceHint(hints,spacer=' '):
         maxLen = max([len(clean_ansi(h)) for h in hints])
         return '\n'.join([int((tWidth-maxLen)/2)*' '+h for h in hints])    
 
-def printBetween(s,_len=None,_char='|',_pad=1,_offset=0,noPrint=False):
+def printBetween(s,_len=None,_char='|',_pad=1,_offset=0,noPrint=False,_animation=None,_eoPad=False):
     stringLength = len(clean_ansi(s))
     if _len == None:
         _len = len(border)
-    #evenOddPad = (0 if (_len-stringLength) % 2 == 0 else -1)
-    #dbg('evenOddPad:',evenOddPad)
-    evenOddPad = 0 # TODO
+
+    evenOddPad = (-1 if tWidth % 2 and _eoPad else 0)
     retrstr = _char+' '*_pad+s+cmod['reset']+(_len-stringLength-3-_pad+evenOddPad)*" "+_char
     retrstr = _offset*' '+retrstr
     if noPrint:
         return retrstr
     else:
-        tprint(retrstr)
+        tprint(retrstr,_animation=_animation)
 
 # approximate detection
 def approximateInput(inp,lst,index=False):
@@ -446,7 +453,7 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
         sys.exit()  
 
 #timetable displayer
-def showTimetable(_day=None,_lesson=None):
+def showTimetable(_day=None,_lesson=None,_animation=None):
     clr()
     dbg('showTimetable called with '+str(_day)+' '+str(_lesson))
     import datetime
@@ -565,14 +572,14 @@ def showTimetable(_day=None,_lesson=None):
     borderIndex = smolBorder.index(dayStr[0])
 
     # top print
-    tprint('\n')
-    tprint(border)
-    tprint('\n')
-    tprint(cmod['bold']+smolBorder+cmod['reset']) 
+    tprint('\n',_animation=_animation)
+    tprint(border,_animation=_animation)
+    tprint('\n',_animation=_animation)
+    tprint(cmod['bold']+smolBorder+cmod['reset'],_animation=_animation) 
     
     # body print
     for l in lines:
-        printBetween(2*' '+l,_len=borderLen+1,_offset=borderIndex,_char='|\033[K')
+        printBetween(2*' '+l,_len=borderLen+1,_offset=borderIndex,_char='|\033[K',_animation=_animation)
    
     # hint bar
     resetHint = underline('reset',0,colors[1])
@@ -598,17 +605,19 @@ def showTimetable(_day=None,_lesson=None):
             cmod['bold']+
             borderIndex*' '+
             (borderLen-len(clean_ansi(dayLegend)))*'-'+
-            dayLegend
+            dayLegend,
+            _animation=_animation
     )
 
-    tprint('\n\033[K')
+    tprint('\n\033[K',_animation=_animation)
     hints = spaceHint(sorted(hints,key=lambda x: len(clean_ansi(x))))
     
     for h in hints.split('\n'):
-        tprint('\033[K'+h)
-    tprint('\n')
-    tprint(border)
-    padBottom()
+        tprint('\033[K'+h,_animation=_animation)
+
+    tprint('\n',_animation=_animation)
+    tprint(border,_animation=_animation)
+    padBottom(anim=_animation)
 
     ## input
     # formatting input to always start with l/d
@@ -634,7 +643,7 @@ def showTimetable(_day=None,_lesson=None):
         else:
             showTitle()
 
-    showTimetable(selectedDay,selectedLesson)
+    showTimetable(selectedDay,selectedLesson,_animation="classic")
 
 #main displayer function
 def showGrades(noInp=False,inp=None):
@@ -709,16 +718,16 @@ def showGrades(noInp=False,inp=None):
         #formatting grades with line breaking
         _line = f'{cmod["bold"]}Grades:{cmod["reset"]} '+actual+simulated
         _sep = char
-        _padLen = len(f'Grades: ')
+        _pad = len(f'Grades: ')
         _len = tWidth-5
-        gradesFormatted = breakLine(_line,_padLen,_len,_sep)
+        gradesFormatted = break_line(_line,_pad,_len,_sep)
 
         
         ###printing
         tprint('\n')
         tprint(padded(subStr))
         tprint(border)
-        for l in gradesFormatted.split('\n'):
+        for l in gradesFormatted:
             printBetween(l)
         
         printBetween('')
@@ -856,12 +865,12 @@ def showGrades(noInp=False,inp=None):
         tprint(border)
             
         for li,l in enumerate(lines):
-            cl = breakLine(l,len(clean_ansi(f'{lines[li].split(":")[0]}  ')),tWidth-5,' ',)
-            for n in cl.split('\n'):
-                printBetween(n)
+            cl = break_line(l,_pad=len(clean_ansi(f'{lines[li].split(":")[0]}  ')),_len=tWidth-6-(1 if tWidth % 2 else 0))
+            for n in cl:
+                printBetween(n,_len=tWidth,_eoPad=1)
             
                 if tWidth < 80:
-                    printBetween('')
+                    printBetween('',_len=tWidth,_eoPad=1)
 
         #bottom border
         tprint(border)
@@ -1249,13 +1258,13 @@ def showGrades(noInp=False,inp=None):
 
             gradestr += valStr
 
-        broken = breakLine(gradestr,_padLen=longest+14,_len=tWidth-5).split('\n')
+        broken = break_line(gradestr,_pad=longest+14,_len=tWidth-5)
         for l in broken:
-            printBetween(l,_len=tWidth)
+            printBetween(l,_len=tWidth,_eoPad=1)
 
         #if the subject is in globals and has data the lines get printed
         if tWidth < 90:
-            printBetween('',_len=tWidth)
+            printBetween('',_len=tWidth,_eoPad=1)
             
     #bottom border
     dbg('Overall '+str(sum(avgs)/len(subjectsList)))
@@ -1330,7 +1339,7 @@ def showRecents():
         datetime = _datetime
 
         for e in [subject,theme,valweight,datetime]:
-            for t in breakLine(e,_len=tWidth*2/3).split('\n'):
+            for t in break_line(e,_len=tWidth*2/3):
                 lines.append(t)
 
         maxLen = max(len(clean_ansi(l)) for l in lines)
@@ -1850,10 +1859,9 @@ def showUpdate():
     # | content |
     for l in changelog:
         l += " "
-        broken = breakLine(l,_padLen=2,_len=borderLen-4)
-        brokenList = broken.split('\n')
+        broken = break_line(l,_pad=2,_len=borderLen-4)
 
-        for line in brokenList:
+        for line in broken:
             line = line.replace('-',cmod['bold']+colors[4]+'-'+cmod['reset'])
             if not line == '':
                 tprint(padded(printBetween(line,noPrint=1,_len=borderLen+1,_char=_char+cmod['reset'])))
