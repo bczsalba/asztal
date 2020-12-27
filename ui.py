@@ -154,7 +154,7 @@ def padBottom(offset=0,anim=None):
     if anim == None:
        anim = animation
 
-    for _ in range(tHeight-offset-2-printedLines):
+    for _ in range(tHeight-offset-1-printedLines):
         tprint('\033[K',empty=True,_animation=anim)
 
 #handles function recalling in scrolling mode, so it doesnt reprint and looks all pretty
@@ -617,7 +617,7 @@ def showTimetable(_day=None,_lesson=None,_animation=None):
 
     tprint('\n',_animation=_animation)
     tprint(border,_animation=_animation)
-    padBottom(anim=_animation)
+    padBottom(anim=_animation,offset=1)
 
     ## input
     # formatting input to always start with l/d
