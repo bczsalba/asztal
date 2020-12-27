@@ -30,6 +30,7 @@ def onExit(signum,frame):
 from asztal import vrs,curdir,debug
 from settings import *
 
+DO_DEBUG = False
 daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday']
 cursorUp = '\033[1A'
 silence = '\033[1A'+'\033[K'
@@ -37,21 +38,19 @@ offset = 20
 
 #color
 def getColors():
-    c = {}
-    if customColors == 'True' and 'colors.py' in os.listdir(curdir+'/storage'):
-        import colors as cols
-        for name,value in zip(['one','two','three','four','five'],cols.colors):
-            c[name] = f'\033[38;5;{value}m'
+    c = []
+    if 'colors.py' in os.listdir(curdir+'/storage'):
+        import colors as colors
+        items = colors.colorschemes
+        keys = [v['name'] for v in items]
+        schemes = items[keys.index(colorscheme)]
 
-    else:
-        c['one'] = '\033[31m'            #red
-        c['two'] = '\033[38;5;166m'      #orange/brown
-        c['three'] = '\033[38;5;226m'    #yellow
-        c['four'] = '\033[38;5;156m'     #light green
-        c['five'] = '\033[32m'           #green
- 
-    c['fade'] = '\033[38;5;245m'
-    return [c['fade'],c['one'],c['two'],c['three'],c['four'],c['five']]
+        for name in ['one','two','three','four','five']:
+            if isinstance(schemes[name],int):
+                c.append(f'\033[38;5;{schemes[name]}m')
+
+    c.insert(0,'\033[38;5;245m')
+    return c
 
 colors = getColors()
 cmod = {
@@ -82,6 +81,9 @@ def clr(f=0):
 
 #toggleable print, logging
 def dbg(*args,f=0,time=1,show=1):
+    if not DO_DEBUG:
+        return
+
     _pad = '     '
 
     info = ' '.join([repr(a) for a in args])
@@ -396,8 +398,8 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
         dbg('title called')
 
         titleLines = titleArt.split('\n')
-        cols = colors[1:].copy()+colors[1:].copy()
-        cols.reverse()
+        col = colors[1:].copy()
+        cols = col+col[::-1][1:]
 
         tprint('\n\n\n\n')
         maxtlen = max(len(l) for l in titleLines)
@@ -415,7 +417,7 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
         borderlen = maxlen-npad
 
         tprint(cmod['bold']+' '+padded((borderlen)*'-'))
-        paddedColors = ['','']+colors[1:]+colors[1:]
+        paddedColors = ['','']+cols
         for i,(s,c) in enumerate(zip(items,paddedColors)):
             i -= 1
             index = (str(i-1)+'. ' if i > 0 else '')
@@ -457,9 +459,6 @@ def showTimetable(_day=None,_lesson=None,_animation=None):
     clr()
     dbg('showTimetable called with '+str(_day)+' '+str(_lesson))
     import datetime
-
-    def tprint_l(s):
-        tprint('\033[K'+s,_animation=_animation,empty=True)
 
     ## get closest weekday to d
     def getClosestDay(d=None):
@@ -903,7 +902,7 @@ def showGrades(noInp=False,inp=None):
                 pass
 
     #overall info menu
-    def menuOverall(_mode='current',_grades=None,_subjects=None):
+    def menuOverall(_mode='current',_grades=None,_subjects=None,_animation=None):
         def getCurrent():
             mode = 'current'
             return avgs.copy()
@@ -991,15 +990,21 @@ def showGrades(noInp=False,inp=None):
         try:
             filtered = [g for g in grades if isinstance(g,int)]
             avg = round(sum(filtered)/len(filtered),4)
-            avgstr = colors[round(avg)-1]+str(avg)+cmod['reset']
+            avgstr = colors[round(avg)]+str(avg)+cmod['reset']
+
         except (TypeError,ZeroDivisionError) as e:
-            if mode in ['difference','edit']:
+            if mode in ['edit']:
                 avgstr = ''
             else:
                 dbg(str(e))
                 avgstr = colors[1]+'TBA'+cmod['reset']
 
         clr()
+        if _animation == "classic":
+            global printedLines
+
+            printedLines -= 1
+
         borderLen = longest+12
         
         # get hint array, color and color, print them
@@ -1008,8 +1013,8 @@ def showGrades(noInp=False,inp=None):
         hints = spaceHint([makeHint(h,col=c) for h,c in zip(options,col)])
         title = 'overall'
         subBorder = cmod['bold']+title
-        tprint('\n\n')
-        tprint(padded(subBorder+(borderLen-len(clean_ansi(subBorder+avgstr))-1)*'-'+avgstr)+cmod['reset'])
+        tprint('\n\n\n\n',_animation=_animation)
+        tprint(padded(subBorder+(borderLen-len(clean_ansi(subBorder+avgstr))-1)*'-'+avgstr)+cmod['reset'],_animation=_animation)
         
         # print all the lines
         for i,(sub,gra) in enumerate(zip(subjects,grades)):
@@ -1017,7 +1022,7 @@ def showGrades(noInp=False,inp=None):
             if mode == 'difference': 
                 col = ''
             else:
-                col = (colors[gra-1] if isinstance(gra,int) else colors[1])
+                col = (colors[gra] if isinstance(gra,int) else colors[1])
             
             # shorten string values
             if isinstance(gra,str) and len(clean_ansi(gra.strip())) > 3:
@@ -1040,19 +1045,22 @@ def showGrades(noInp=False,inp=None):
             line = index+subject+': '
             pad = (borderLen-len(clean_ansi(line+value))-5)*' '
             line = line+pad+value+' '
-            tprint(padded(printBetween(line,_len=borderLen,noPrint=True,_char=cmod['bold']+'|'+cmod['reset'])))
+            tprint(padded(printBetween(line,_len=borderLen,noPrint=True,_char=cmod['bold']+'|'+cmod['reset'])),_animation=_animation,empty=True)
 
         # print bottom border
-        tprint(padded(cmod['bold']+((borderLen-1)*'-'))+cmod['reset'])
-        tprint('\n')
+        tprint(padded(cmod['bold']+((borderLen-1)*'-'))+cmod['reset'],_animation=_animation)
+        tprint('\n',_animation=_animation)
 
         hintLines = hints.split('\n')
-        padBottom(offset=1)
-        tprint(f'\033[{2+len(hintLines)}A')
+
+        #tprint(f'\033[{len(hintLines)}A')
+
         
         # print hints
         for h in hintLines:
-            tprint(h)
+            tprint(h,_animation=_animation)
+
+        padBottom(offset=0,anim=_animation)
 
         
         # edit input section
@@ -1061,7 +1069,7 @@ def showGrades(noInp=False,inp=None):
             if choice.isdigit():
                 choice += qInp()
             else:
-                menuOverall(_mode='edit')
+                menuOverall()
 
             if choice == '':
                 menuOverall()
@@ -1070,9 +1078,9 @@ def showGrades(noInp=False,inp=None):
                 sub = subjects[int(choice)]
                 old = grades[int(choice)]
                 clr(f=1)
-                tprint('\n\n')
-                tprint(padded(cmod['bold']+sub+': '+colors[old-1]+str(old)+cmod['reset']+cmod['bold']+' -> '+colors[4]+cmod['reset']))
-                padBottom()
+                tprint('\n\n',_animation=_animation)
+                tprint(padded(cmod['bold']+sub+': '+colors[old-1]+str(old)+cmod['reset']+cmod['bold']+' -> '+colors[4]+cmod['reset']),_animation=_animation)
+
                 new = qInp()
                 clr(f=1)
 
@@ -1104,7 +1112,8 @@ def showGrades(noInp=False,inp=None):
                 clr()
                 globals()['sublist'] = [s.replace('* ','') for s in sublist]
                 showGrades()
-        menuOverall(_mode=mode)
+
+        menuOverall(_mode=mode,_animation="classic")
 
     #sorting method, returns how many grades the subject has
     def getLen(sub):
@@ -1147,7 +1156,7 @@ def showGrades(noInp=False,inp=None):
         #colorful return value
         if _ret == 'str':
             if cm == 'colored':
-                _avgStr = cmod['bold'] + colors[round(_avgFloat)-1] + str(_avgFloat) + _pad + cmod['reset']
+                _avgStr = cmod['bold'] + colors[round(_avgFloat)] + str(_avgFloat) + _pad + cmod['reset']
             else:
                 _avgStr = str(_avgFloat) + _pad
 
@@ -1468,7 +1477,16 @@ def showSettings():
             cmt = cmt.replace("'",'').strip()
             comments.append(cmt)
         
-        #dbg(len(names))
+    # add colorschemes
+    if 'colors.py' in os.listdir(curdir+'/storage/'):
+        import colors as colorschemes
+        names.append('colorscheme')
+        options.append([])
+        data.append([])
+        for c in colorschemes.colorschemes:
+            options[-1].append(c['name'])
+            data[-1].append(c['name'])
+
     clr()
 
     ## main menu
@@ -1485,6 +1503,7 @@ def showSettings():
     tprint(menuBorder)
     lines = []
     for i,n in enumerate(names):
+        dbg('bane',n)
         if len(options[i]) in range(3):
             formatting = [colors[4],colors[1]]
         else:
@@ -1497,8 +1516,9 @@ def showSettings():
             try:
                 selIndex = data[i].index(globals()[n])
             except Exception as e:
-                dbg(n+': '+str(e))
+                dbg(globals()[n],data[i])
                 continue
+
             selected = formatting[selIndex]+options[i][selIndex]
      
         left = padding+f'{cmod["bold"]}{i}. {n}:' 
@@ -1797,6 +1817,8 @@ def showProfiles():
 ##update menu
 def showUpdate():    
     clr()
+    print(f'\033[{tHeight-1};0H'+'Loading...')
+
     newLog = requests.get("https://raw.githubusercontent.com/bczsalba/asztal/master/changelog").text.split('\n')
     newVersion = float(newLog[0][:-1])
     changelog = '\n'.join(newLog[1:]).split('\n')

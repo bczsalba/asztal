@@ -1,6 +1,7 @@
 # note: you need to add new vars to the comments AND live sections too 
 # comments used for display, leave them intact
 #  variable name : options-data-comment-preview_function
+#  colorscheme is dynamically added by sourcing storage/colors.py
 # 
 #
 #. subSorter : ['average','average reversed','time','length']-['getAvg','getAvgR','time','getLen']-'Method to sort subjects'
@@ -22,8 +23,8 @@
 subSorter = "time"
 gradeSorter = "time"
 colorMode = "grade"
-customColors = "True"
 ttdefault = "l"
 prettyUser = "True"
 animTime = 3
 animation = "classic"
+colorscheme = "better"
