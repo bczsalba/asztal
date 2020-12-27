@@ -154,7 +154,7 @@ def padBottom(offset=0,anim=None):
     if anim == None:
        anim = animation
 
-    for _ in range(tHeight-offset-1-printedLines):
+    for _ in range(tHeight-offset-1-printedLines-(1 if anim == 'classic' else 0)):
         tprint('\033[K',empty=True,_animation=anim)
 
 #handles function recalling in scrolling mode, so it doesnt reprint and looks all pretty
