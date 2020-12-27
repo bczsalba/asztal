@@ -1,13 +1,9 @@
-1.3:
-- added support for Teahaz integration
-- added getch file to replace input
-- added arrow/hjkl navigation to timetable
+1.31:
+- updated timetable hint
+- updated settings submenu visuals
+- implemented much improved line break function
 
-- fixed a bug with non-existant midterm grades being compared
-- fixed bugs with timetable empty days
-- fixed hints in all menus
-
-- set classic as the default animation mode
-
-- removed update method as it wasn't functional
-- removed debug mode
+- fixed the buggy splash art
+- fixed oversights with getch navigation
+- fixed scrolling view on low-width displays
+- fixed spacing bug that has existed for almost a year
