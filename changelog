@@ -9,4 +9,4 @@
 - updated getch support
 - updated some hints
 
-NOTE: run `rm */storage*` before `git pull`
+NOTE: run `rm */storage*; git reset --hard HEAD; git pull` to update
