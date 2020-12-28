@@ -684,7 +684,7 @@ def showGrades(noInp=False,inp=None):
         #if no sub is provided it gets assigned based on index, grades get assigned based on _grades
         sub = (sublist[_index] if _sub == None else _sub)
         if not 'allGrades' in globals():
-            allGrades = [v for v in marks if v['subject'] == sub and v['type'] == 'evkozi_jegy_ertekeles' and isinstance(v['value'],int)]
+            allGrades = [v for v in marks if v['subject'] == sub and v['type'] == 'MidTerm' and isinstance(v['value'],int)]
         dbg(f'sub: {sub}\nlen(aG): {len(allGrades)}')
         
         
@@ -830,7 +830,7 @@ def showGrades(noInp=False,inp=None):
 
         
         #looping through the elements of the choice subject's list
-        for v in [v for v in reversed(marks) if v['subject'] == choice and v['type'] == 'evkozi_jegy_ertekeles']:   
+        for v in [v for v in reversed(marks) if v['subject'] == choice and v['type'] == 'MidTerm']:   
             #value
             if isinstance(v['value'],str):
                 value = f'{cmod["italic"]}text{cmod["reset"]}'
@@ -1135,7 +1135,7 @@ def showGrades(noInp=False,inp=None):
             if not isinstance(value,int):
                 continue
             _type = val['type']
-            if not _type == 'evkozi_jegy_ertekeles':
+            if not _type == 'MidTerm':
                 continue
             weight = val['weight']/100
             weightedGrade = value * weight
@@ -1231,7 +1231,7 @@ def showGrades(noInp=False,inp=None):
         gradestr = f'{index}. {sub}'+' '*(longest-len(sub))+f'[{getAvg(sub,gradeStyle,_ret="str")}] |: '
         
         #remove text grades
-        grades = reversed([v for v in marks if isinstance(v['value'],int) and v['type'] == 'evkozi_jegy_ertekeles'])
+        grades = reversed([v for v in marks if isinstance(v['value'],int) and v['type'] == 'MidTerm'])
 
         #sorting list of grades according to settings
         if gradeSorter == 'time':
@@ -1344,7 +1344,7 @@ def showRecents():
         index = str(i)
         subject = cmod['bold']+colors[3]+mark["subject"]+cmod['reset']+':'
         theme = (mark['theme'] if not mark['theme'] == '' else 'None')
-        value = (f'{cmod["bold"]}{colors[mark["value"]-1]}{mark["value"]}{cmod["reset"]}' if isinstance(mark["value"],int) else mark["value"]) 
+        value = (f'{cmod["bold"]}{colors[mark["value"]]}{mark["value"]}{cmod["reset"]}' if isinstance(mark["value"],int) else mark["value"]) 
         weight = (f'*{mark["weight"]}{cmod["reset"]}' if not mark["weight"] == 'None' else '')
         valweight = (value if '-' in weight else value+weight)
         _datetime = f'{colors[0]}{mark["date"]} {mark["time"]}{cmod["reset"]}'
@@ -1615,7 +1615,7 @@ def showSettings():
     if not inputType:
         for _ in range(lilPaddyVert): tprint(padding+(subBorderLen-3)*' '+'|')
     
-    tprint(cmod['bold']+((subBorderLen)*'-').center(tWidth)+cmod['reset']+'\n')
+    tprint(cmod['bold']+((subBorderLen)*'-').center(tWidth)+cmod['reset'])
     
     padBottom()
     

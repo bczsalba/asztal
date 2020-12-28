@@ -174,13 +174,19 @@ class Student:
             date = dateFull.split('T')[0]
             time = dateFull.split('T')[1][:-4]
             
+            # set type to proper universal value
             if _type == 'felevi_jegy_ertekeles':
                 theme = 'Half term result'
                 weight = 100
+                _type = "HalfTerm"
 
             elif _type == 'evvegi_jegy_ertekeles':
                 theme = 'End of term result'
                 weight = 100
+                _type = "EndOfTerm"
+
+            elif _type == 'evkozi_jegy_ertekeles':
+                _type = "MidTerm"
 
 
             ## add subject to subjectsList if not in there already
