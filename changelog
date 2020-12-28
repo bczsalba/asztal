@@ -8,5 +8,3 @@
 - updated default settings file
 - updated getch support
 - updated some hints
-
-NOTE: run `rm */storage*; git reset --hard HEAD; git pull` to update

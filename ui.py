@@ -1904,7 +1904,7 @@ def showUpdate():
     canUpdate = vrs < newVersion
 
     # hints
-    hint = ('`git pull` to update/reinstall')
+    hint = ('`sh update.sh` to update/reinstall')
     hintLine = makeHint(hint,colors[4],noUnderline=True)
     for h in hintLine.split('\n'):
         tprint(padded(h))
