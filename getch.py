@@ -81,7 +81,11 @@ class OSReadWrapper(object):
     def read(self, chars):
         buffer = ''
         while len(buffer) < chars:
-            buffer += self.__decoder.decode(os.read(self.__fd, 1))
+            try:
+                buffer += self.__decoder.decode(os.read(self.__fd, 1))
+            except KeyboardInterrupt:
+                buffer = "SIGTERM"
+                break
         return buffer
 
 class InputField:

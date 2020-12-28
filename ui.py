@@ -104,8 +104,12 @@ def qInp(s='',length=1):
     buff = []
     while len(buff) < length:
         key = getch()
+
         if key == 'ENTER':
             key = ''
+        elif key == 'SIGTERM':
+            showTitle('6')
+
         buff.append(key)
 
     dbg("input:",buff)
