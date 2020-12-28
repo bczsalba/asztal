@@ -23,7 +23,7 @@ colorschemes = [
     {
         # inspired by someone great
         "name":  "lilac",
-        "one":   133,
+        "one":   211,
         "two":   225,
         "three": 219,
         "four":  177,
