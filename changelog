@@ -8,3 +8,5 @@
 - updated default settings file
 - updated getch support
 - updated some hints
+
+NOTE: run `rm */storage*` before `git pull`
