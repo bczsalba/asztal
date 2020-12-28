@@ -37,11 +37,7 @@ except Exception as e:
     else:
         print('No settings.py in directory and no default_settings found.\n Check log for info.')
         with open(os.path.join(curdir,'log'),'a') as f:
-            f.write(f'no settings in directory ({curdir}): {repr(files)}')
-        if input('Run update.py to solve this issue? [Y]n ').lower in ['y','']:
-            import update
-            update.start()
-        else:
+            f.write(f'no settings in directory ({curdir}).')
             sys.exit()
 
 #get version number
