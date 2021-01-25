@@ -90,4 +90,4 @@ timetable = [
 |--------------|---------------------------------------------------:|
 | Original API |  [BoA](https://github.com/boapps/e-kreta-api-docs) |
 | Extra Help   |  [Filc](https://filcnaplo.hu)                      |
-| New API      |  [Me](https://github.com/bczsalba/ekreta-v2-docs)  |
+| Updated API  |  [Me](https://github.com/bczsalba/ekreta-docs-v2)  |
