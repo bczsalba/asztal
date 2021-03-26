@@ -1235,6 +1235,7 @@ def showGrades(noInp=False,inp=None):
         grades = [v for v in marks if isinstance(v['value'],int) and v['type'] == 'MidTerm' and v['subject'] == sub]
         if not len(grades):
             continue
+        grades.reverse()
 
         gradeStyle = colorHandler(colorMode)[0] #colored,none
         weightStyle = colorHandler(colorMode)[1] #weighted,faded,none
