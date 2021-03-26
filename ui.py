@@ -30,7 +30,7 @@ def onExit(signum,frame):
 from asztal import vrs,curdir,debug
 from settings import *
 
-DO_DEBUG = False
+DO_DEBUG = 0
 daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday']
 cursorUp = '\033[1A'
 silence = '\033[1A'+'\033[K'
@@ -485,7 +485,6 @@ def showTimetable(_day=None,_lesson=None,_animation=None):
         if results == []:
             return 0
 
-        dbg(results.index(min(results)))
         return results.index(min(results))
 
     # detect if recalled by itself
@@ -734,7 +733,7 @@ def showGrades(noInp=False,inp=None):
         _sep = char
         _pad = len(f'Grades: ')
         _len = tWidth-5
-        gradesFormatted = break_line(_line,_pad,_len,_sep)
+        gradesFormatted = break_line(_line,_len,_pad,_sep)
 
         
         ###printing
