@@ -1355,6 +1355,9 @@ def showRecents():
         datetime = _datetime
 
         for e in [subject,theme,valweight,datetime]:
+            if e is None:
+                continue
+
             for t in break_line(e,_len=tWidth*2/3):
                 lines.append(t)
 
