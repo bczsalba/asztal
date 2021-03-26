@@ -30,7 +30,7 @@ def onExit(signum,frame):
 from asztal import vrs,curdir,debug
 from settings import *
 
-DO_DEBUG = True
+DO_DEBUG = False
 daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday']
 cursorUp = '\033[1A'
 silence = '\033[1A'+'\033[K'
@@ -108,7 +108,7 @@ def qInp(s='',length=1):
     while len(buff) < length:
         key = getch()
 
-        if key == 'ENTER':
+        if key == 'ENTER' or key == 'ESC':
             key = ''
         elif key == 'SIGTERM':
             showTitle('6')
