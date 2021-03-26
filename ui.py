@@ -1,4 +1,4 @@
-# :main=./asztal.py -o
+# :main=./asztal.py
 
 #imports
 import os
@@ -30,11 +30,14 @@ def onExit(signum,frame):
 from asztal import vrs,curdir,debug
 from settings import *
 
-DO_DEBUG = False
+DO_DEBUG = True
 daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday']
 cursorUp = '\033[1A'
 silence = '\033[1A'+'\033[K'
 offset = 20
+
+strGradeNames = ['Példás','Jó','Közepes','Elégséges','Elégtelen']
+
 
 #color
 def getColors():
@@ -179,6 +182,11 @@ def handleRecall():
         goto(0,0)
         print('\033[K')
         goto(0,0)
+
+def markIntFromString(s):
+    if not s in strGradeNames:
+        return -1
+    return 5-strGradeNames.index(s)
 
 try: from settings import tWidth
 except Exception: 
@@ -1226,6 +1234,11 @@ def showGrades(noInp=False,inp=None):
 
     avgs = []
     for i,sub in enumerate(sublist): 
+        #remove text grades
+        grades = [v for v in marks if isinstance(v['value'],int) and v['type'] == 'MidTerm' and v['subject'] == sub]
+        if not len(grades):
+            continue
+
         gradeStyle = colorHandler(colorMode)[0] #colored,none
         weightStyle = colorHandler(colorMode)[1] #weighted,faded,none
 
@@ -1234,8 +1247,6 @@ def showGrades(noInp=False,inp=None):
         index = ('0' if len(str(i)) < 2 else '')+str(i)
         gradestr = f'{index}. {sub}'+' '*(longest-len(sub))+f'[{getAvg(sub,gradeStyle,_ret="str")}] |: '
         
-        #remove text grades
-        grades = reversed([v for v in marks if isinstance(v['value'],int) and v['type'] == 'MidTerm'])
 
         #sorting list of grades according to settings
         if gradeSorter == 'time':
@@ -1250,8 +1261,9 @@ def showGrades(noInp=False,inp=None):
             if not v['subject'] == sub:
                 continue
 
-
             value = v['value']
+
+
             if gradeStyle == 'colored':
                 value = colors[int(value)]+str(value)+cmod['reset']                    
 
@@ -1273,7 +1285,7 @@ def showGrades(noInp=False,inp=None):
                     valStr = f'{value}*{weight} '
 
             gradestr += valStr
-
+            
         broken = break_line(gradestr,_pad=longest+14,_len=tWidth-5)
         for l in broken:
             printBetween(l,_len=tWidth,_eoPad=1)

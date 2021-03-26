@@ -6,7 +6,7 @@ import sys,json,os,datetime,subprocess,shutil,time
 curdir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0,os.path.join(curdir,'storage'))
 
-debug = 0
+debug = 1
 
 #clear log file
 open(os.path.join(curdir,'log'),'w').close
