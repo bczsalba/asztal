@@ -937,12 +937,12 @@ def showGrades(noInp=False,inp=None):
 
         def getHalf():
             mode = 'half'
-            halfyears = [m for m in marks if m['type'] == 'felevi_jegy_ertekeles']
+            halfyears = [m for m in marks if m['type'] == 'HalfTerm']
             return getTerm(halfyears)
             
         def getEnd():
             mode = 'end'
-            endyears = [m for m in marks if m['type'] == 'evvegi_jegy_ertekeles']
+            endyears = [m for m in marks if m['type'] == 'EndTerm']
             return getTerm(endyears)
             
         def getDifference():
@@ -1037,12 +1037,12 @@ def showGrades(noInp=False,inp=None):
                 col = (colors[gra] if isinstance(gra,int) else colors[1])
             
             # shorten string values
-            if isinstance(gra,str) and len(clean_ansi(gra.strip())) > 3:
+            if isinstance(gra,str) and len(clean_ansi(gra.strip())) > 6:
                 if mode == 'difference':
                     gras = gra.split('->')
                     val = '->'.join(['.',gras[1]])
                 else:
-                    val = gra[:4]+'..'
+                    val = gra[:6]+'..'
             else:
                 val = str(gra)+cmod['reset']
             
