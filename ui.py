@@ -1230,10 +1230,12 @@ def showGrades(noInp=False,inp=None):
     sublist = (subjectsList.copy() if subSorter == 'time' else sorted(subjectsList.copy(),key=glDict[subSorter],reverse=reverse))
 
     avgs = []
+    noNull = sublist.copy()
     for i,sub in enumerate(sublist): 
         #remove text grades
         grades = [v for v in marks if isinstance(v['value'],int) and v['type'] == 'MidTerm' and v['subject'] == sub]
         if not len(grades):
+            noNull.remove(sub)
             continue
         grades.reverse()
 
@@ -1292,6 +1294,8 @@ def showGrades(noInp=False,inp=None):
         if tWidth < 90:
             printBetween('',_len=tWidth,_eoPad=1)
             
+    sublist = noNull
+
     #bottom border
     dbg('Overall '+str(sum(avgs)/len(subjectsList)))
     dbg('('+str(sum(avgs))+'/'+str(len(subjectsList))+')')
