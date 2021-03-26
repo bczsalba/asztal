@@ -331,13 +331,11 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
             wobbly = '\n'.join(wobblyLines)
 
             print((((tHeight//2))-3)*'\n')
-            #print(random.randint(0,1)*'\n')
             print(wobbly)
-            #print('\n\n-wobble wobble')
             if speak:
                 time.sleep(2)
             else:
-                time.sleep(random.randint(5,0)/100)
+                time.sleep(random.randint(5,10)/100/(tWidth/90))
         
         clr(f=1)
         print(tWidth//2*'\n'+'   Goodnight lil fella...'+'\n'+'   Wobbly (Jun. 15-27, 2020)'+'\n')
@@ -455,7 +453,7 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
             titleArt = getTitleArt()
             showTitle()
         
-        elif choice == 'wobbly':
+        elif choice == '*':
             wobbly()
             showTitle()
 
@@ -468,7 +466,7 @@ def showTitle(_choice=None,bday=False,noPrint=False,localAnimTime=animTime):
 
 #timetable displayer
 def showTimetable(_day=None,_lesson=None,_animation=None):
-    clr()
+    globals()['printedLines'] = 0
     dbg('showTimetable called with '+str(_day)+' '+str(_lesson))
     import datetime
 
