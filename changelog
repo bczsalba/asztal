@@ -1,10 +1,2 @@
-1.4:
-- added custom colorscheme support (storage/colors.py)
-- added custom api file support
-
-- fixed printing in overall menu
-- fixed grade color being lower than intended in all menus
-
-- updated default settings file
-- updated getch support
-- updated some hints
+1.41:
+- fixed some long standing bugs
