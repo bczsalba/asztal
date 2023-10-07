@@ -1,4 +1,4 @@
-# Asztal: A Terminal GUI client for the e-Kreta system
+# Asztal: A Terminal TUI client for the e-Kreta system
 <p align=center>
     <img src=https://github.com/bczsalba/asztal-images/blob/master/title.png alt=title width=80%>
 </p>
